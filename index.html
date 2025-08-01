@@ -316,14 +316,12 @@
                 this.codeManager = new CodeManager(this);
                 this.filmManager = new FilmManager(this);
                 this.uiManager = new UIManager();
-                this.soundManager = new SoundManager();
             }
 
             init() {
                 this.auth.init();
                 this.codeManager.init();
                 this.filmManager.init();
-                this.soundManager.init();
                 
                 const currentUser = this.auth.getCurrentUser();
                 if (currentUser) {
