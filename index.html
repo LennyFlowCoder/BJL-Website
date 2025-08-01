@@ -117,6 +117,9 @@
         
         h1, h2 { font-weight: 600; }
 
+        .input-group { margin-bottom: 1rem; }
+        .input-group label { display: block; margin-bottom: 0.5rem; }
+
         .input-group input, .input-group textarea {
             width: 100%;
             padding: 12px 15px;
@@ -268,14 +271,20 @@
                 <div class="glass-box admin-section">
                     <h2>Neuen Film hochladen</h2>
                     <form id="upload-form">
-                        <div class="input-group"><input type="text" id="film-title" placeholder="Filmtitel" required></div>
-                        <div class="input-group"><textarea id="film-description" placeholder="Filmbeschreibung" required style="background: rgba(0,0,0,0.2); border-radius:10px;"></textarea></div>
-                        <div class="input-group"><label>Coverbild:</label><input type="file" id="film-cover" accept="image/*" required></div>
-                        <div class="drop-zone" style="border: 2px dashed #fff; border-radius: 10px;">
-                            <p>Videodatei hierher ziehen oder klicken</p>
-                            <input type="file" id="film-video" accept="video/*" required style="display: none;">
+                        <div class="input-group">
+                            <input type="text" id="film-title" placeholder="Filmtitel" required>
                         </div>
-                        <p id="upload-file-name"></p>
+                        <div class="input-group">
+                            <textarea id="film-description" placeholder="Filmbeschreibung" required style="background: rgba(0,0,0,0.2); border-radius:10px;"></textarea>
+                        </div>
+                        <div class="input-group">
+                            <label>Coverbild:</label>
+                            <input type="file" id="film-cover" accept="image/*" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Videodatei:</label>
+                            <input type="file" id="film-video" accept="video/*" required>
+                        </div>
                         <button type="submit" class="btn btn-primary" style="width:100%">Film hochladen</button>
                         <p id="upload-success" class="success" style="display:none;">Film erfolgreich hochgeladen!</p>
                     </form>
@@ -528,34 +537,16 @@
             }
         }
         
-        // NEUE, ERSETZTE FILM-MANAGER KLASSE FÜR CLOUDINARY
         class FilmManager {
             constructor(app) {
                 this.app = app;
                 this.films = JSON.parse(localStorage.getItem('films')) || [];
             }
 
+            // KORRIGIERT: VEREINFACHTE INIT-FUNKTION OHNE DRAG & DROP
             init() {
                 const uploadForm = document.getElementById('upload-form');
                 if (!uploadForm) return;
-
-                const dropZone = document.getElementById('drop-zone');
-                const fileInput = document.getElementById('film-video');
-                
-                dropZone.addEventListener('click', () => fileInput.click());
-                dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-                dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-                dropZone.addEventListener('drop', e => {
-                    e.preventDefault();
-                    dropZone.classList.remove('drag-over');
-                    if (e.dataTransfer.files.length) {
-                        fileInput.files = e.dataTransfer.files;
-                        document.getElementById('upload-file-name').textContent = `Datei: ${fileInput.files[0].name}`;
-                    }
-                });
-                fileInput.addEventListener('change', () => {
-                   if(fileInput.files.length) document.getElementById('upload-file-name').textContent = `Datei: ${fileInput.files[0].name}`;
-                });
                 
                 uploadForm.addEventListener('submit', e => {
                     e.preventDefault();
@@ -573,7 +564,6 @@
             }
 
             async uploadFilm() {
-                // ### HIER DEINE DATEN EINTRAGEN ###
                 const CLOUD_NAME = "dgsfozqb7"; 
                 const UPLOAD_PRESET = "pkd40q5y";
 
@@ -638,7 +628,6 @@
                     const successMsg = document.getElementById('upload-success');
                     successMsg.style.display = 'block';
                     document.getElementById('upload-form').reset();
-                    document.getElementById('upload-file-name').textContent = '';
                     setTimeout(() => { successMsg.style.display = 'none'; }, 3000);
 
                 } catch (error) {
