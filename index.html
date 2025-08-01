@@ -1,0 +1,836 @@
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BJL Cinematic Universe</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+    <style>
+        /* Globale Stile und Variablen */
+        :root {
+            --primary-bg: #111;
+            --secondary-bg: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+            --accent-gold: #c0a062;
+            --accent-red: #e50914;
+            --error-color: #ff4d4d;
+            --font-primary: 'Montserrat', sans-serif;
+            --font-headings: 'Playfair Display', serif;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            font-family: var(--font-primary);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background-color: rgba(0, 0, 0, 0.5);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-family: var(--font-headings);
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Verstecke Views standardmäßig */
+        .view {
+            display: none;
+        }
+        .view.active {
+            display: block;
+        }
+
+        /* Authentifizierungs-Container (Login/Register) */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 80px); /* 80px für Header-Höhe */
+            padding: 2rem;
+        }
+
+        .auth-box {
+            background-color: var(--secondary-bg);
+            padding: 2.5rem;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        h1, h2 {
+            font-family: var(--font-headings);
+            color: var(--accent-gold);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .input-group input:focus, .input-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .auth-switch a {
+            color: var(--accent-gold);
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-gold);
+            color: #000;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background-color: #d4b375;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--text-primary);
+            color: var(--primary-bg);
+        }
+        
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-link {
+            background: none;
+            color: var(--accent-gold);
+            text-decoration: underline;
+            padding: 0;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Nachrichten */
+        .error {
+            color: var(--error-color);
+            text-align: center;
+            margin-top: 1rem;
+            min-height: 20px;
+        }
+
+        .success {
+            color: #4CAF50;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        /* Dashboard & Admin-Seiten */
+        .main-content, .admin-container {
+            padding: 2rem;
+        }
+
+        .code-container {
+            max-width: 500px;
+            margin: 2rem auto;
+            text-align: center;
+            background: var(--secondary-bg);
+            padding: 2rem;
+            border-radius: 8px;
+        }
+
+        #access-code {
+            font-size: 2rem;
+            text-align: center;
+            letter-spacing: 0.5rem;
+            padding: 0.5rem;
+            width: 100%;
+            max-width: 300px;
+            margin: 1rem auto;
+        }
+
+        /* Filmgalerie */
+        .film-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .film-card {
+            background-color: var(--secondary-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+
+        .film-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.7);
+        }
+
+        .film-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .film-card .film-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            padding: 1rem;
+            color: var(--text-primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .film-card:hover .film-info {
+            opacity: 1;
+        }
+
+        .film-card h3 {
+            margin: 0;
+            font-family: var(--font-headings);
+        }
+
+        /* Video Player Modal */
+        .modal {
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: none; /* Changed from flex */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: var(--secondary-bg);
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 900px;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 25px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: var(--text-primary);
+        }
+
+        /* Admin-Seite */
+        .admin-section {
+            background-color: var(--secondary-bg);
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .admin-section h2 {
+            text-align: left;
+            margin-top: 0;
+        }
+        
+        .admin-container h1 {
+            text-align: center;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .user-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 1rem;
+            background-color: #333;
+            border-radius: 4px;
+            gap: 1rem;
+        }
+
+        /* Drag & Drop Zone */
+        .drop-zone {
+            border: 2px dashed var(--accent-gold);
+            border-radius: 5px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            margin: 1rem 0;
+            transition: background-color 0.3s;
+        }
+
+        .drop-zone.drag-over {
+            background-color: rgba(192, 160, 98, 0.1);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-header {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .film-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="main-header">
+        <a href="#" class="logo">BJL Cinematic Universe</a>
+        <div id="header-controls" class="header-controls" style="display:none;">
+            <span id="welcome-user"></span>
+            <button id="logout-btn" class="btn btn-secondary">Logout</button>
+        </div>
+    </header>
+
+    <main>
+        <div id="auth-view" class="view active">
+            <div class="auth-container">
+                <div class="auth-box" id="login-box">
+                    <h2>Login</h2>
+                    <form id="login-form">
+                        <div class="input-group">
+                            <input type="email" id="login-email" required placeholder="E-Mail">
+                        </div>
+                        <div class="input-group">
+                            <input type="password" id="login-password" required placeholder="Passwort">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Einloggen</button>
+                        <p class="auth-switch">Noch kein Konto? <a id="show-register">Jetzt registrieren</a></p>
+                    </form>
+                </div>
+
+                <div class="auth-box" id="register-box" style="display:none;">
+                    <h2>Registrieren</h2>
+                    <form id="register-form">
+                        <div class="input-group">
+                            <input type="email" id="register-email" required placeholder="E-Mail">
+                        </div>
+                        <div class="input-group">
+                            <input type="password" id="register-password" required placeholder="Passwort">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Registrieren</button>
+                        <p class="auth-switch">Bereits ein Konto? <a id="show-login">Zum Login</a></p>
+                    </form>
+                </div>
+            </div>
+            <p id="error-message" class="error"></p>
+        </div>
+        
+        <div id="dashboard-view" class="view">
+            <div class="main-content">
+                <div id="code-entry-section" class="code-container">
+                    <h2>Zugangscode erforderlich</h2>
+                    <p>Bitte gib deinen 6-stelligen Zugangscode ein, um die Inhalte freizuschalten.</p>
+                    <form id="code-form">
+                        <input type="text" id="access-code" placeholder="XXXXXX" maxlength="6" required>
+                        <button type="submit" class="btn btn-primary">Freischalten</button>
+                    </form>
+                    <p id="code-error" class="error"></p>
+                    <button id="request-code-btn" class="btn btn-link">Noch keinen Code? Jetzt anfordern</button>
+                    <p id="request-message" class="success" style="display:none;">Deine Anfrage wurde an den Admin gesendet.</p>
+                </div>
+
+                <div id="film-gallery-section" class="gallery-container" style="display:none;">
+                    <h2>Filmgalerie</h2>
+                    <div id="film-grid" class="film-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="admin-view" class="view">
+             <div class="admin-container">
+                <h1>Admin Dashboard</h1>
+                <section class="admin-section">
+                    <h2>Code-Anfragen</h2>
+                    <div id="code-requests-list" class="user-list"></div>
+                </section>
+                <section class="admin-section">
+                    <h2>Neuen Film hochladen</h2>
+                    <form id="upload-form">
+                        <div class="input-group"><input type="text" id="film-title" placeholder="Filmtitel" required></div>
+                        <div class="input-group"><textarea id="film-description" placeholder="Filmbeschreibung" required></textarea></div>
+                        <div class="input-group">
+                            <label>Coverbild:</label>
+                            <input type="file" id="film-cover" accept="image/*" required>
+                        </div>
+                        <div id="drop-zone" class="drop-zone">
+                            <p>Videodatei hierher ziehen oder klicken zum Auswählen</p>
+                            <input type="file" id="film-video" accept="video/*" required style="display: none;">
+                        </div>
+                        <p id="upload-file-name"></p>
+                        <button type="submit" class="btn btn-primary">Film hochladen</button>
+                        <p id="upload-success" class="success" style="display:none;">Film erfolgreich hochgeladen!</p>
+                    </form>
+                </section>
+                <section class="admin-section">
+                    <h2>Benutzerübersicht</h2>
+                    <div id="user-list" class="user-list"></div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <div id="video-player-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <video id="video-player" width="100%" controls></video>
+            <h3 id="video-title"></h3>
+            <p id="video-description"></p>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const app = new App();
+            app.init();
+        });
+
+        // ===================================
+        // ===== HAUPTANWENDUNGS-STEUERUNG =====
+        // ===================================
+        class App {
+            constructor() {
+                this.auth = new Auth(this);
+                this.codeManager = new CodeManager(this);
+                this.filmManager = new FilmManager(this);
+                this.uiManager = new UIManager();
+            }
+
+            init() {
+                this.auth.init();
+                this.codeManager.init();
+                this.filmManager.init();
+                
+                const currentUser = this.auth.getCurrentUser();
+                if (currentUser) {
+                    this.showDashboard(currentUser);
+                } else {
+                    this.uiManager.showView('auth');
+                }
+            }
+            
+            showDashboard(user) {
+                this.uiManager.showLoggedInHeader(user.email);
+                if (user.email === 'bjl.cinematicuniverse@gmail.com') {
+                    this.uiManager.showView('admin');
+                    this.codeManager.displayCodeRequests();
+                    this.codeManager.displayAllUsers();
+                } else {
+                    this.uiManager.showView('dashboard');
+                }
+            }
+
+            logout() {
+                this.auth.logout();
+                this.uiManager.showLoggedOutHeader();
+                this.uiManager.showView('auth');
+            }
+        }
+        
+        // ===================================
+        // ===== UI-MANAGER (ANSICHTEN) ======
+        // ===================================
+        class UIManager {
+            constructor() {
+                this.views = document.querySelectorAll('.view');
+                this.headerControls = document.getElementById('header-controls');
+                this.welcomeUser = document.getElementById('welcome-user');
+            }
+            
+            showView(viewId) {
+                this.views.forEach(view => {
+                    view.classList.remove('active');
+                    if (view.id === `${viewId}-view`) {
+                        view.classList.add('active');
+                    }
+                });
+            }
+            
+            showLoggedInHeader(email) {
+                this.headerControls.style.display = 'flex';
+                this.welcomeUser.textContent = `Willkommen, ${email}`;
+            }
+
+            showLoggedOutHeader() {
+                this.headerControls.style.display = 'none';
+            }
+        }
+
+        // ===================================
+        // ===== AUTHENTIFIZIERUNG ===========
+        // ===================================
+        class Auth {
+            constructor(app) {
+                this.app = app;
+                this.users = JSON.parse(localStorage.getItem('users')) || [];
+                if (!this.users.find(u => u.email === 'bjl.cinematicuniverse@gmail.com')) {
+                    this.users.push({ email: 'bjl.cinematicuniverse@gmail.com', password: 'admin' });
+                    this._saveUsers();
+                }
+            }
+            
+            init() {
+                document.getElementById('login-form').addEventListener('submit', e => { e.preventDefault(); this.login(); });
+                document.getElementById('register-form').addEventListener('submit', e => { e.preventDefault(); this.register(); });
+                document.getElementById('show-register').addEventListener('click', () => this._toggleAuthForms(true));
+                document.getElementById('show-login').addEventListener('click', () => this._toggleAuthForms(false));
+                document.getElementById('logout-btn').addEventListener('click', () => this.app.logout());
+            }
+
+            _saveUsers() {
+                localStorage.setItem('users', JSON.stringify(this.users));
+            }
+            
+            _toggleAuthForms(showRegister) {
+                document.getElementById('login-box').style.display = showRegister ? 'none' : 'block';
+                document.getElementById('register-box').style.display = showRegister ? 'block' : 'none';
+                document.getElementById('error-message').textContent = '';
+            }
+
+            register() {
+                const email = document.getElementById('register-email').value;
+                const password = document.getElementById('register-password').value;
+                if (this.users.find(user => user.email === email)) {
+                    document.getElementById('error-message').textContent = 'E-Mail bereits registriert.';
+                    return;
+                }
+                this.users.push({ email, password });
+                this._saveUsers();
+                alert('Registrierung erfolgreich! Bitte einloggen.');
+                this._toggleAuthForms(false);
+                document.getElementById('register-form').reset();
+            }
+
+            login() {
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                const user = this.users.find(u => u.email === email && u.password === password);
+
+                if (user) {
+                    user.lastLogin = new Date().toISOString();
+                    const userIndex = this.users.findIndex(u => u.email === email);
+                    this.users[userIndex].lastLogin = user.lastLogin;
+                    this._saveUsers();
+                    localStorage.setItem('currentUser', JSON.stringify({ email: user.email }));
+                    this.app.showDashboard({ email: user.email });
+                } else {
+                    document.getElementById('error-message').textContent = 'Ungültige E-Mail oder falsches Passwort.';
+                }
+            }
+
+            logout() {
+                localStorage.removeItem('currentUser');
+            }
+
+            getCurrentUser() {
+                return JSON.parse(localStorage.getItem('currentUser'));
+            }
+            
+            getAllUsers() {
+                return this.users;
+            }
+        }
+
+        // ===================================
+        // ===== CODE-VERWALTUNG =============
+        // ===================================
+        class CodeManager {
+            constructor(app) {
+                this.app = app;
+                this.codes = JSON.parse(localStorage.getItem('codes')) || [];
+                this.codeRequests = JSON.parse(localStorage.getItem('codeRequests')) || [];
+            }
+            
+            init() {
+                document.getElementById('request-code-btn').addEventListener('click', () => this.requestAccessCode());
+                document.getElementById('code-form').addEventListener('submit', e => { e.preventDefault(); this.validateCode(); });
+            }
+
+            _saveData() {
+                localStorage.setItem('codes', JSON.stringify(this.codes));
+                localStorage.setItem('codeRequests', JSON.stringify(this.codeRequests));
+            }
+
+            requestAccessCode() {
+                const currentUser = this.app.auth.getCurrentUser();
+                if (!currentUser) return;
+                if (this.codeRequests.includes(currentUser.email)) {
+                    alert('Du hast bereits einen Code angefordert. Bitte habe etwas Geduld.');
+                    return;
+                }
+                this.codeRequests.push(currentUser.email);
+                this._saveData();
+                document.getElementById('request-message').style.display = 'block';
+            }
+
+            validateCode() {
+                const codeInput = document.getElementById('access-code').value;
+                const currentUser = this.app.auth.getCurrentUser();
+                const codeError = document.getElementById('code-error');
+                const foundCode = this.codes.find(c => c.code === codeInput && c.user === currentUser.email && !c.isUsed);
+
+                if (foundCode) {
+                    foundCode.isUsed = true;
+                    this._saveData();
+                    document.getElementById('code-entry-section').style.display = 'none';
+                    document.getElementById('film-gallery-section').style.display = 'block';
+                    this.app.filmManager.loadFilmGallery();
+                } else {
+                    codeError.textContent = 'Ungültiger oder bereits verwendeter Code.';
+                }
+            }
+            
+            displayCodeRequests() {
+                const listElement = document.getElementById('code-requests-list');
+                listElement.innerHTML = this.codeRequests.length === 0 ? '<p>Keine offenen Anfragen.</p>' : '';
+                this.codeRequests.forEach(email => {
+                    const item = document.createElement('div');
+                    item.className = 'user-item';
+                    item.innerHTML = `<span>${email}</span><button class="btn btn-primary btn-sm">Code erstellen</button>`;
+                    item.querySelector('button').addEventListener('click', () => this.generateAndSendCode(email));
+                    listElement.appendChild(item);
+                });
+            }
+
+            generateAndSendCode(email) {
+                const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+                this.codes.push({ code: newCode, user: email, isUsed: false, createdAt: new Date().toISOString() });
+                this.codeRequests = this.codeRequests.filter(reqEmail => reqEmail !== email);
+                this._saveData();
+                sendCodeByEmail(email, newCode); // EmailJS-Funktion
+                alert(`Code ${newCode} für ${email} erstellt. E-Mail-Versand simuliert/ausgelöst.`);
+                this.displayCodeRequests();
+            }
+            
+            displayAllUsers() {
+                const listElement = document.getElementById('user-list');
+                listElement.innerHTML = '';
+                this.app.auth.getAllUsers().forEach(user => {
+                    if (user.email === 'bjl.cinematicuniverse@gmail.com') return; // Admin nicht anzeigen
+                    const lastLogin = user.lastLogin ? new Date(user.lastLogin).toLocaleString('de-DE') : 'Nie';
+                    const item = document.createElement('div');
+                    item.className = 'user-item';
+                    item.innerHTML = `<span><strong>E-Mail:</strong> ${user.email}</span><span><strong>Letzter Login:</strong> ${lastLogin}</span>`;
+                    listElement.appendChild(item);
+                });
+            }
+        }
+        
+        // ===================================
+        // ===== FILM- & UPLOAD-VERWALTUNG ====
+        // ===================================
+        class FilmManager {
+            constructor(app) {
+                this.app = app;
+                this.films = JSON.parse(localStorage.getItem('films')) || [];
+            }
+            
+            init() {
+                // Upload Form
+                const uploadForm = document.getElementById('upload-form');
+                const dropZone = document.getElementById('drop-zone');
+                const fileInput = document.getElementById('film-video');
+                
+                dropZone.addEventListener('click', () => fileInput.click());
+                dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+                dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+                dropZone.addEventListener('drop', e => {
+                    e.preventDefault();
+                    dropZone.classList.remove('drag-over');
+                    if (e.dataTransfer.files.length) {
+                        fileInput.files = e.dataTransfer.files;
+                        document.getElementById('upload-file-name').textContent = `Datei: ${fileInput.files[0].name}`;
+                    }
+                });
+                fileInput.addEventListener('change', () => {
+                   if(fileInput.files.length) document.getElementById('upload-file-name').textContent = `Datei: ${fileInput.files[0].name}`;
+                });
+                
+                uploadForm.addEventListener('submit', e => { e.preventDefault(); this.uploadFilm(); });
+                
+                // Video Modal
+                document.querySelector('.close-btn').onclick = () => this.hideVideoPlayer();
+                document.getElementById('video-player-modal').addEventListener('click', (e) => {
+                    if (e.target.id === 'video-player-modal') this.hideVideoPlayer();
+                });
+            }
+            
+            _saveFilms() {
+                localStorage.setItem('films', JSON.stringify(this.films));
+            }
+            
+            uploadFilm() {
+                const title = document.getElementById('film-title').value;
+                const description = document.getElementById('film-description').value;
+                const coverFile = document.getElementById('film-cover').files[0];
+                const videoFile = document.getElementById('film-video').files[0];
+
+                if (title && description && coverFile && videoFile) {
+                    const newFilm = {
+                        id: Date.now(),
+                        title,
+                        description,
+                        cover: URL.createObjectURL(coverFile),
+                        video: URL.createObjectURL(videoFile)
+                    };
+                    this.films.push(newFilm);
+                    this._saveFilms();
+                    
+                    const successMsg = document.getElementById('upload-success');
+                    successMsg.style.display = 'block';
+                    document.getElementById('upload-form').reset();
+                    document.getElementById('upload-file-name').textContent = '';
+                    setTimeout(() => { successMsg.style.display = 'none'; }, 3000);
+
+                } else {
+                    alert('Bitte alle Felder ausfüllen.');
+                }
+            }
+            
+            loadFilmGallery() {
+                const filmGrid = document.getElementById('film-grid');
+                filmGrid.innerHTML = '';
+                if (this.films.length === 0) {
+                    filmGrid.innerHTML = '<p>Aktuell sind keine Filme verfügbar.</p>';
+                    return;
+                }
+                this.films.forEach(film => {
+                    const filmCard = document.createElement('div');
+                    filmCard.className = 'film-card';
+                    filmCard.innerHTML = `<img src="${film.cover}" alt="${film.title}"><div class="film-info"><h3>${film.title}</h3></div>`;
+                    filmCard.addEventListener('click', () => this.showVideoPlayer(film));
+                    filmGrid.appendChild(filmCard);
+                });
+            }
+            
+            showVideoPlayer(film) {
+                const modal = document.getElementById('video-player-modal');
+                document.getElementById('video-player').src = film.video;
+                document.getElementById('video-title').textContent = film.title;
+                document.getElementById('video-description').textContent = film.description;
+                modal.classList.add('active');
+            }
+
+            hideVideoPlayer() {
+                const modal = document.getElementById('video-player-modal');
+                modal.classList.remove('active');
+                document.getElementById('video-player').pause();
+            }
+        }
+        
+        // ===================================
+        // ===== EMAILJS-FUNKTION ============
+        // ===================================
+        function sendCodeByEmail(userEmail, accessCode) {
+            // HIER DEINE EMAILJS DATEN EINTRAGEN
+            const serviceID = 'DEIN_SERVICE_ID';
+            const templateID = 'DEIN_TEMPLATE_ID';
+            const userID = 'DEIN_USER_ID'; // Public Key
+
+            if (serviceID.startsWith('DEIN_')) {
+                console.warn(`EmailJS ist nicht konfiguriert. Simulierter Versand an ${userEmail} mit Code: ${accessCode}`);
+                return;
+            }
+            
+            emailjs.init(userID);
+            const templateParams = { to_email: userEmail, access_code: accessCode, from_name: 'BJL Cinematic Universe' };
+
+            emailjs.send(serviceID, templateID, templateParams)
+                .then(res => console.log('E-Mail erfolgreich gesendet!', res.status, res.text))
+                .catch(err => console.error('Fehler beim Senden der E-Mail:', err));
+        }
+
+    </script>
+</body>
+</html>
