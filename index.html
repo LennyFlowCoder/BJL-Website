@@ -4,6 +4,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Streaming Plattform</title>
     <style>
+        :root {
+            --primary-color: #e50914;
+            --background-dark: #121212;
+            --background-light: #1e1e1e;
+            --text-primary: #e0e0e0;
+            --text-secondary: #aaa;
+            --border-color: #2d2d2d;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             display: flex;
@@ -11,207 +20,73 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            background-color: #121212;
-            color: #e0e0e0;
+            background-color: var(--background-dark);
+            color: var(--text-primary);
         }
 
-        .hidden {
-            display: none !important;
-        }
+        .hidden { display: none !important; }
 
-        #app-container {
-            width: 100%;
-            max-width: 400px;
-            margin: 20px;
-        }
+        #app-container { width: 100%; max-width: 500px; margin: 20px; }
 
         .form-container, .dashboard-container {
-            background-color: #1e1e1e;
+            background-color: var(--background-light);
             padding: 2rem 2.5rem;
             border-radius: 12px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-            border: 1px solid #2d2d2d;
+            border: 1px solid var(--border-color);
         }
 
-        h2 {
-            text-align: center;
-            margin-bottom: 2rem;
-            font-weight: 600;
-        }
+        h2, h3 { text-align: center; font-weight: 600; }
+        h3 { margin-top: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem; }
 
-        .input-group {
-            margin-bottom: 1.5rem;
-        }
-
+        .input-group { margin-bottom: 1.5rem; }
         input[type="email"], input[type="password"], input[type="text"] {
-            display: block;
-            width: 100%;
-            padding: 0.9rem 1rem;
-            border: 1px solid #444;
-            border-radius: 8px;
-            background-color: #2b2b2b;
-            color: #e0e0e0;
-            font-size: 1rem;
-            box-sizing: border-box; /* Ensures padding doesn't affect width */
+            display: block; width: 100%; padding: 0.9rem 1rem;
+            border: 1px solid #444; border-radius: 8px;
+            background-color: #2b2b2b; color: var(--text-primary);
+            font-size: 1rem; box-sizing: border-box;
         }
-        
-        input[type="email"]::placeholder, 
-        input[type="password"]::placeholder,
-        input[type="text"]::placeholder {
-            color: #888;
-        }
+        input::placeholder { color: #888; }
 
         button {
-            width: 100%;
-            padding: 0.9rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            cursor: pointer;
+            width: 100%; padding: 0.9rem; border: none; border-radius: 8px;
+            font-size: 1.1rem; font-weight: 700; cursor: pointer;
             transition: background-color 0.2s ease, transform 0.1s ease;
         }
+        button:active { transform: scale(0.98); }
 
-        button:active {
-            transform: scale(0.98);
-        }
-
-        .btn-primary {
-            background-color: #e50914;
-            color: white;
-            margin-top: 1rem;
-        }
-
-        .btn-primary:hover {
-            background-color: #f40612;
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            color: #888;
-            margin: 1.5rem 0;
-        }
-
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #444;
-        }
-
-        .divider:not(:empty)::before {
-            margin-right: .5em;
-        }
-
-        .divider:not(:empty)::after {
-            margin-left: .5em;
-        }
-
-        .btn-google {
-            background-color: #4285F4;
-            color: white;
-        }
+        .btn-primary { background-color: var(--primary-color); color: white; margin-top: 1rem; }
+        .btn-primary:hover { background-color: #f40612; }
         
-        .btn-google:hover {
-            background-color: #5a95f5;
-        }
+        .btn-secondary { background-color: #333; color: #e0e0e0; padding: 0.6rem 1rem; width: auto; font-size: 0.9rem; }
+        .btn-secondary:hover { background-color: #444; }
 
-        .switch-form-link {
-            text-align: center;
-            margin-top: 2rem;
-            color: #aaa;
-        }
+        .btn-google { background-color: #4285F4; color: white; }
+        .btn-google:hover { background-color: #5a95f5; }
 
-        .switch-form-link a {
-            color: #e50914;
-            text-decoration: none;
-            font-weight: 600;
-        }
+        .switch-form-link { text-align: center; margin-top: 2rem; color: var(--text-secondary); }
+        .switch-form-link a { color: var(--primary-color); text-decoration: none; font-weight: 600; }
+        .switch-form-link a:hover { text-decoration: underline; }
+
+        /* Dashboard & Admin Specifics */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px; }
+        #logout-button { background: none; color: var(--primary-color); text-align: right; padding: 0; font-weight: normal; width: auto; font-size: 1rem; }
+
+        .code-generator { background-color: #2b2b2b; padding: 1rem; border-radius: 8px; text-align: center; margin-top: 1rem; }
+        #generated-code-display { font-size: 1.8rem; font-weight: bold; color: white; letter-spacing: 3px; margin: 0.5rem 0 1rem 0; }
+        .code-actions button { width: auto; display: inline-block; margin: 0 5px; }
+
+        .movie-list { list-style: none; padding: 0; }
+        .movie-list li { background-color: #2b2b2b; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; }
         
-        .switch-form-link a:hover {
-            text-decoration: underline;
-        }
-
-        /* Dashboard Styles */
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .admin-header .btn-secondary {
-            background-color: #333;
-            color: #e0e0e0;
-            padding: 0.6rem 1rem;
-            width: auto;
-            font-size: 0.9rem;
-        }
+        .add-movie-form { display: flex; gap: 10px; margin-top: 1rem; }
+        .add-movie-form input { flex-grow: 1; }
+        .add-movie-form button { width: auto; margin-top: 0; font-size: 1rem; }
         
-        .admin-header .btn-secondary:hover {
-            background-color: #444;
-        }
-        
-        #logout-button {
-            background: none;
-            color: #e50914;
-            text-align: right;
-            padding: 0;
-            font-weight: normal;
-            width: auto;
-        }
-
-        .content-area h3 {
-            border-bottom: 1px solid #444;
-            padding-bottom: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .user-content, .code-entry {
-            text-align: center;
-        }
-
-        .user-list-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        
-        .user-list-content {
-            background: #1e1e1e;
-            padding: 2rem;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 500px;
-        }
-
-        .user-list-content h3 {
-            margin-top: 0;
-        }
-
-        .user-list-content ul {
-            list-style: none;
-            padding: 0;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .user-list-content li {
-            background: #2b2b2b;
-            padding: 0.8rem;
-            border-radius: 6px;
-            margin-bottom: 0.5rem;
-        }
+        /* Modal Styles */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: var(--background-light); padding: 2rem; border-radius: 12px; width: 90%; max-width: 500px; }
+        .modal-content ul { max-height: 300px; overflow-y: auto; }
     </style>
 </head>
 <body>
@@ -222,16 +97,13 @@
             <div class="form-container">
                 <h2>Anmelden</h2>
                 <form id="login-form">
-                    <div class="input-group">
-                        <input type="email" id="login-email" placeholder="E-Mail" required>
-                    </div>
-                    <div class="input-group">
-                        <input type="password" id="login-password" placeholder="Passwort" required>
-                    </div>
+                    <div class="input-group"><input type="email" id="login-email" placeholder="E-Mail" required></div>
+                    <div class="input-group"><input type="password" id="login-password" placeholder="Passwort" required></div>
                     <button type="submit" class="btn-primary">Anmelden</button>
                 </form>
-                <div class="divider">oder</div>
-                <button id="google-login-btn" class="btn-google">Mit Google anmelden</button>
+                <div style="display:flex; align-items:center; color:#888; margin: 1.5rem 0;"><hr style="flex:1; border-color:#444;">
+                    <span style="padding:0 10px;">oder</span><hr style="flex:1; border-color:#444;"></div>
+                <button class="btn-google">Mit Google anmelden</button>
                 <p class="switch-form-link">Noch kein Konto? <a href="#" id="show-register-link">Registrieren</a></p>
             </div>
         </div>
@@ -240,12 +112,8 @@
             <div class="form-container">
                 <h2>Konto erstellen</h2>
                 <form id="register-form">
-                    <div class="input-group">
-                        <input type="email" id="register-email" placeholder="E-Mail" required>
-                    </div>
-                    <div class="input-group">
-                        <input type="password" id="register-password" placeholder="Passwort" required>
-                    </div>
+                    <div class="input-group"><input type="email" placeholder="E-Mail" required></div>
+                    <div class="input-group"><input type="password" placeholder="Passwort" required></div>
                     <button type="submit" class="btn-primary">Registrieren</button>
                 </form>
                 <p class="switch-form-link">Schon ein Konto? <a href="#" id="show-login-link">Anmelden</a></p>
@@ -255,46 +123,45 @@
         <div id="dashboard-view" class="hidden">
             <div class="dashboard-container">
                 
-                <div id="admin-controls" class="admin-header hidden">
-                    <div>
-                         <button id="request-codes-btn" class="btn-secondary">Codes anfordern</button>
-                         <button id="show-users-btn" class="btn-secondary">Wer ist online?</button>
+                <div class="header">
+                    <h2 id="welcome-header" style="text-align:left; margin-bottom:0;">Dashboard</h2>
+                    <button id="logout-button">Abmelden</button>
+                </div>
+                
+                <div id="admin-content" class="hidden">
+                    <h3>Code Verwaltung</h3>
+                    <div class="code-generator">
+                        <p>Einen neuen Zugangscode für einen Benutzer erstellen:</p>
+                        <div id="generated-code-display">- - - - - -</div>
+                        <div class="code-actions">
+                             <button id="request-code-btn" class="btn-primary" style="width:auto; padding: 0.8rem 1.5rem;">Code anfordern</button>
+                             <button id="copy-code-btn" class="btn-secondary hidden">Kopieren</button>
+                        </div>
                     </div>
-                    <button id="admin-logout-button">Abmelden</button>
-                </div>
-                
-                <div id="user-controls" class="admin-header hidden">
-                     <h2 id="welcome-user">Willkommen!</h2>
-                     <button id="user-logout-button">Abmelden</button>
-                </div>
-                
-                <hr>
 
-                <div id="admin-content" class="content-area hidden">
-                    <h3>Admin Dashboard</h3>
-                    <p>Hier siehst du deine Filme und verwaltest den Zugriff.</p>
+                    <h3>Filme verwalten</h3>
+                    <div class="add-movie-form">
+                        <input type="text" id="movie-title-input" placeholder="Neuen Filmtitel eingeben...">
+                        <button id="add-movie-btn" class="btn-primary">+</button>
+                    </div>
+                    <ul id="admin-movie-list" class="movie-list" style="margin-top:1rem;"></ul>
                 </div>
 
-                <div id="user-content" class="content-area hidden">
-                    <h3>Deine Filme</h3>
-                    <div class="code-entry">
-                        <p>Bitte gib einen Code ein, um auf die Inhalte zuzugreifen.</p>
+                <div id="user-content" class="hidden">
+                    <div id="user-code-entry">
+                        <h3>Zugriff auf Inhalte</h3>
+                        <p>Bitte gib einen 6-stelligen Code ein, um die Filme anzusehen.</p>
                         <div class="input-group">
-                            <input type="text" id="access-code" placeholder="Zugangscode">
+                            <input type="text" id="access-code-input" placeholder="Zugangscode" maxlength="6">
                         </div>
                         <button id="submit-code-btn" class="btn-primary" style="width: auto; padding: 0.8rem 1.5rem;">Code einlösen</button>
                     </div>
+                    <div id="user-movie-view" class="hidden">
+                        <h3>Verfügbare Filme</h3>
+                        <ul id="user-movie-list" class="movie-list"></ul>
+                    </div>
                 </div>
 
-            </div>
-        </div>
-
-        <div id="user-list-modal" class="user-list-modal hidden">
-            <div class="user-list-content">
-                <h3>Eingeloggte Benutzer</h3>
-                <ul id="online-user-list">
-                    </ul>
-                <button id="close-modal-btn" class="btn-primary" style="margin-top: 1rem;">Schließen</button>
             </div>
         </div>
 
@@ -302,141 +169,133 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- DOM Elements ---
+            // --- App State ---
+            const ADMIN_EMAIL = 'bjl.cinematicuniverse@gmail.com';
+            let activeCode = null; // Store the currently valid code
+            let movies = []; // In-memory "database" for movies
+
+            // --- Views ---
             const loginView = document.getElementById('login-view');
             const registerView = document.getElementById('register-view');
             const dashboardView = document.getElementById('dashboard-view');
 
-            const showRegisterLink = document.getElementById('show-register-link');
-            const showLoginLink = document.getElementById('show-login-link');
-            
+            // --- View Triggers ---
+            document.getElementById('show-register-link').addEventListener('click', (e) => { e.preventDefault(); loginView.classList.add('hidden'); registerView.classList.remove('hidden'); });
+            document.getElementById('show-login-link').addEventListener('click', (e) => { e.preventDefault(); registerView.classList.add('hidden'); loginView.classList.remove('hidden'); });
+
+            // --- Shared Elements ---
             const loginForm = document.getElementById('login-form');
-            const loginEmailInput = document.getElementById('login-email');
+            const welcomeHeader = document.getElementById('welcome-header');
+            const logoutButton = document.getElementById('logout-button');
 
             // --- Admin Elements ---
-            const adminControls = document.getElementById('admin-controls');
             const adminContent = document.getElementById('admin-content');
-            const requestCodesBtn = document.getElementById('request-codes-btn');
-            const showUsersBtn = document.getElementById('show-users-btn');
-            const adminLogoutBtn = document.getElementById('admin-logout-button');
-            
+            const requestCodeBtn = document.getElementById('request-code-btn');
+            const copyCodeBtn = document.getElementById('copy-code-btn');
+            const codeDisplay = document.getElementById('generated-code-display');
+            const movieTitleInput = document.getElementById('movie-title-input');
+            const addMovieBtn = document.getElementById('add-movie-btn');
+            const adminMovieList = document.getElementById('admin-movie-list');
+
             // --- User Elements ---
-            const userControls = document.getElementById('user-controls');
             const userContent = document.getElementById('user-content');
-            const welcomeUserHeader = document.getElementById('welcome-user');
-            const userLogoutBtn = document.getElementById('user-logout-button');
+            const userCodeEntry = document.getElementById('user-code-entry');
+            const accessCodeInput = document.getElementById('access-code-input');
             const submitCodeBtn = document.getElementById('submit-code-btn');
+            const userMovieView = document.getElementById('user-movie-view');
+            const userMovieList = document.getElementById('user-movie-list');
 
-            // --- Modal Elements ---
-            const userListModal = document.getElementById('user-list-modal');
-            const onlineUserList = document.getElementById('online-user-list');
-            const closeModalBtn = document.getElementById('close-modal-btn');
-
-            // --- App State ---
-            const ADMIN_EMAIL = 'bjl.cinematicuniverse@gmail.com';
-
-            // --- View Switching Logic ---
-            showRegisterLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                loginView.classList.add('hidden');
-                registerView.classList.remove('hidden');
-            });
-
-            showLoginLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                registerView.classList.add('hidden');
-                loginView.classList.remove('hidden');
-            });
-
-            // --- Authentication Logic ---
-            const handleLogin = (email) => {
-                loginView.classList.add('hidden');
-                registerView.classList.add('hidden');
-                dashboardView.classList.remove('hidden');
-
-                if (email.toLowerCase() === ADMIN_EMAIL) {
-                    // Show Admin View
-                    adminControls.classList.remove('hidden');
-                    adminContent.classList.remove('hidden');
-                    userControls.classList.add('hidden');
-                    userContent.classList.add('hidden');
+            // --- Render Functions ---
+            const renderMovies = () => {
+                adminMovieList.innerHTML = '';
+                userMovieList.innerHTML = '';
+                if (movies.length === 0) {
+                    const placeholder = '<li>Keine Filme hinzugefügt.</li>';
+                    adminMovieList.innerHTML = placeholder;
+                    userMovieList.innerHTML = placeholder;
                 } else {
-                    // Show User View
-                    userControls.classList.remove('hidden');
-                    userContent.classList.remove('hidden');
-                    adminControls.classList.add('hidden');
-                    adminContent.classList.add('hidden');
-                    welcomeUserHeader.textContent = `Willkommen, ${email}!`;
+                    movies.forEach(movie => {
+                        const li = `<li>${movie}</li>`;
+                        adminMovieList.insertAdjacentHTML('beforeend', li);
+                        userMovieList.insertAdjacentHTML('beforeend', li);
+                    });
                 }
             };
 
-            const handleLogout = () => {
-                dashboardView.classList.add('hidden');
-                loginView.classList.remove('hidden');
-                // Clear inputs
-                loginEmailInput.value = '';
-                document.getElementById('login-password').value = '';
-            };
-            
+            // --- Event Listeners ---
             loginForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const email = loginEmailInput.value;
-                if (email) {
-                    handleLogin(email);
+                const email = document.getElementById('login-email').value;
+                if (email) handleLogin(email);
+            });
+            
+            logoutButton.addEventListener('click', () => {
+                dashboardView.classList.add('hidden');
+                adminContent.classList.add('hidden');
+                userContent.classList.add('hidden');
+                loginView.classList.remove('hidden');
+                document.getElementById('login-form').reset();
+            });
+
+            // --- Admin Logic ---
+            requestCodeBtn.addEventListener('click', () => {
+                // Generate a 6-digit code
+                activeCode = Math.floor(100000 + Math.random() * 900000).toString();
+                codeDisplay.textContent = activeCode;
+                copyCodeBtn.classList.remove('hidden');
+            });
+
+            copyCodeBtn.addEventListener('click', () => {
+                if (activeCode) {
+                    navigator.clipboard.writeText(activeCode).then(() => {
+                        alert(`Code ${activeCode} wurde in die Zwischenablage kopiert!`);
+                    }).catch(err => {
+                        console.error('Kopieren fehlgeschlagen: ', err);
+                        alert('Kopieren fehlgeschlagen.');
+                    });
                 }
             });
 
-            // This is a placeholder for a real Google Sign-In
-            document.getElementById('google-login-btn').addEventListener('click', () => {
-                // In a real app, this would trigger the Google OAuth flow.
-                // We'll simulate it with a prompt.
-                const email = prompt("Bitte gib deine Google E-Mail-Adresse ein, um die Anmeldung zu simulieren:", "user@gmail.com");
-                if (email) {
-                    handleLogin(email);
+            addMovieBtn.addEventListener('click', () => {
+                const title = movieTitleInput.value.trim();
+                if (title) {
+                    movies.push(title);
+                    movieTitleInput.value = '';
+                    renderMovies();
                 }
             });
 
-            // --- Dashboard Button Logic ---
-            requestCodesBtn.addEventListener('click', () => {
-                // In a real app, this would call a backend to generate a secure, unique code.
-                const newCode = `CODE-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-                alert(`Neuer Code generiert:\n\n${newCode}\n\nGib diesen Code an einen Benutzer weiter.`);
-            });
-
-            showUsersBtn.addEventListener('click', () => {
-                // In a real app, this data would come from a server tracking active sessions.
-                const fakeUsers = [
-                    'user1@example.com',
-                    'another.user@web.de',
-                    'test.account@gmail.com',
-                    ADMIN_EMAIL // The admin is also online
-                ];
-                onlineUserList.innerHTML = ''; // Clear previous list
-                fakeUsers.forEach(user => {
-                    const li = document.createElement('li');
-                    li.textContent = user;
-                    onlineUserList.appendChild(li);
-                });
-                userListModal.classList.remove('hidden');
-            });
-
+            // --- User Logic ---
             submitCodeBtn.addEventListener('click', () => {
-                const code = document.getElementById('access-code').value;
-                if (code.startsWith('CODE-')) {
-                     alert('Code akzeptiert! Deine Filme werden jetzt angezeigt.');
-                     document.querySelector('.code-entry').innerHTML = '<p>Zugriff gewährt. Deine exklusiven Filminhalte sind hier.</p>';
+                if (accessCodeInput.value === activeCode && activeCode !== null) {
+                    alert('Code korrekt! Zugriff gewährt.');
+                    userCodeEntry.classList.add('hidden');
+                    userMovieView.classList.remove('hidden');
                 } else {
-                     alert('Ungültiger Code. Bitte versuche es erneut.');
+                    alert('Falscher oder kein gültiger Code. Bitte frage den Host nach einem neuen Code.');
                 }
             });
 
-            closeModalBtn.addEventListener('click', () => {
-                userListModal.classList.add('hidden');
-            });
-
-            adminLogoutBtn.addEventListener('click', handleLogout);
-            userLogoutBtn.addEventListener('click', handleLogout);
-
+            // --- Main Login Function ---
+            const handleLogin = (email) => {
+                loginView.classList.add('hidden');
+                dashboardView.classList.remove('hidden');
+                
+                if (email.toLowerCase() === ADMIN_EMAIL) {
+                    welcomeHeader.textContent = 'Host Dashboard';
+                    adminContent.classList.remove('hidden');
+                    userContent.classList.add('hidden');
+                } else {
+                    welcomeHeader.textContent = `Willkommen, ${email.split('@')[0]}`;
+                    userContent.classList.remove('hidden');
+                    adminContent.classList.add('hidden');
+                    // Reset user view on login
+                    userCodeEntry.classList.remove('hidden');
+                    userMovieView.classList.add('hidden');
+                    accessCodeInput.value = '';
+                }
+                renderMovies(); // Initial render for both roles
+            };
         });
     </script>
 </body>
