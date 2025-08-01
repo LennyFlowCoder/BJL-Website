@@ -460,28 +460,115 @@
         class CodeManager {
             constructor(app) {
                 this.app = app;
+                // Die Initialisierung aus dem localStorage bleibt beim Start der App bestehen.
                 this.codes = JSON.parse(localStorage.getItem('codes')) || [];
                 this.codeRequests = JSON.parse(localStorage.getItem('codeRequests')) || [];
             }
-            init() {
-                document.getElementById('request-code-btn').addEventListener('click', () => this.requestAccessCode());
-                document.getElementById('code-form').addEventListener('submit', e => { e.preventDefault(); this.validateCode(); });
-            }
+        
             _saveData() {
                 localStorage.setItem('codes', JSON.stringify(this.codes));
                 localStorage.setItem('codeRequests', JSON.stringify(this.codeRequests));
+                // [DIAGNOSE] Bestätigung, dass die Daten tatsächlich gespeichert wurden.
+                console.log('[DIAGNOSE] Daten wurden in localStorage gespeichert.');
             }
+        
+            // --- Benutzer-Funktion ---
             requestAccessCode() {
                 const currentUser = this.app.auth.getCurrentUser();
-                if (!currentUser) return;
+                if (!currentUser) {
+                    console.error('[DIAGNOSE] FEHLER: Kein Benutzer angemeldet, um einen Code anzufordern.');
+                    return;
+                }
+        
                 if (this.codeRequests.includes(currentUser.email)) {
                     alert('Du hast bereits einen Code angefordert.');
                     return;
                 }
+        
                 this.codeRequests.push(currentUser.email);
+                
+                // [DIAGNOSE] Zeigt uns, was gespeichert werden soll.
+                console.log('[DIAGNOSE] Speichere Code-Anfragen:', this.codeRequests);
+                
                 this._saveData();
                 document.getElementById('request-message').style.display = 'block';
             }
+            
+            // --- Admin-Funktion ---
+            displayCodeRequests() {
+                const listElement = document.getElementById('code-requests-list');
+                if (!listElement) return;
+        
+                // [DIAGNOSE] Zeigt uns, was aus dem Speicher gelesen wird.
+                const loadedRequests = JSON.parse(localStorage.getItem('codeRequests')) || [];
+                console.log('[DIAGNOSE] Lade Code-Anfragen aus localStorage:', loadedRequests);
+                this.codeRequests = loadedRequests; // Stelle sicher, dass der interne Status aktuell ist.
+        
+                listElement.innerHTML = '';
+                if (this.codeRequests.length === 0) {
+                    listElement.innerHTML = '<p>Keine offenen Anfragen.</p>';
+                    return;
+                }
+        
+                this.codeRequests.forEach(email => {
+                    const item = document.createElement('div');
+                    item.className = 'user-item';
+                    item.innerHTML = `<span>${email}</span><button class="btn btn-primary btn-sm">Code erstellen</button>`;
+                    item.querySelector('button').addEventListener('click', () => this.generateAndSendCode(email));
+                    listElement.appendChild(item);
+                });
+            }
+
+    // --- Der Rest der Klasse bleibt unverändert ---
+    init() {
+        document.getElementById('request-code-btn').addEventListener('click', () => this.requestAccessCode());
+        document.getElementById('code-form').addEventListener('submit', e => { e.preventDefault(); this.validateCode(); });
+    }
+    validateCode() {
+        const codeInput = document.getElementById('access-code').value;
+        const currentUser = this.app.auth.getCurrentUser();
+        const codeError = document.getElementById('code-error');
+        codeError.textContent = '';
+        const codeIndex = this.codes.findIndex(c => c.code === codeInput && c.user === currentUser.email);
+
+        if (codeIndex === -1) {
+            codeError.textContent = 'Dieser Code ist ungültig.';
+            return;
+        }
+        const codeObject = this.codes[codeIndex];
+        if (codeObject.isUsed) {
+            codeError.textContent = 'Dieser Code wurde bereits eingelöst.';
+            return;
+        }
+        this.codes[codeIndex].isUsed = true;
+        this._saveData();
+        document.getElementById('code-entry-section').style.display = 'none';
+        document.getElementById('film-gallery-section').style.display = 'block';
+        this.app.filmManager.loadFilmGallery();
+    }
+    generateAndSendCode(email) {
+        const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+        this.codes.push({ code: newCode, user: email, isUsed: false, createdAt: new Date().toISOString() });
+        this.codeRequests = this.codeRequests.filter(reqEmail => reqEmail !== email);
+        this._saveData();
+        sendCodeByEmail(email, newCode);
+        this.displayCodeRequests();
+    }
+    displayAllUsers() {
+        const listElement = document.getElementById('user-list');
+        if (!listElement) return;
+        const allUsers = this.app.auth.getAllUsers();
+        listElement.innerHTML = '';
+        allUsers.forEach(user => {
+            if (user.email === 'bjl.cinematicuniverse@gmail.com') return;
+            const lastLogin = user.lastLogin ? new Date(user.lastLogin).toLocaleString('de-DE') : 'Nie';
+            const item = document.createElement('div');
+            item.className = 'user-item';
+            item.innerHTML = `<span><strong>E-Mail:</strong> ${user.email}</span><span><strong>Login:</strong> ${lastLogin}</span>`;
+            listElement.appendChild(item);
+        });
+    }
+}
             validateCode() {
                 const codeInput = document.getElementById('access-code').value;
                 const currentUser = this.app.auth.getCurrentUser();
