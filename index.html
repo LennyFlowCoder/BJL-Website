@@ -335,7 +335,6 @@
                 const currentUser = this.app.auth.getCurrentUser();
                 if (!currentUser) return;
                 let requests = JSON.parse(localStorage.getItem('codeRequests')) || [];
-                // if (requests.includes(currentUser.email)) { alert('Du hast bereits einen Code angefordert.'); return; } // Entfernt, um mehrfache Anfragen zu erlauben
                 requests.push(currentUser.email);
                 localStorage.setItem('codeRequests', JSON.stringify(requests));
                 document.getElementById('request-message').style.display = 'block';
