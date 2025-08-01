@@ -354,30 +354,7 @@
                 this.uiManager.showView('auth');
             }
         }
-        
-        class SoundManager {
-            constructor() {
-                this.hoverSound = new Audio('assets/hover.mp3'); 
-                this.clickSound = new Audio('assets/click.mp3');
-                this.hoverSound.volume = 0.3;
-                this.clickSound.volume = 0.5;
-            }
-            
-            init() {
-                const buttons = document.querySelectorAll('.btn, .film-card, .close-btn, a');
-                buttons.forEach(button => {
-                    button.addEventListener('mouseenter', () => {
-                        this.hoverSound.currentTime = 0;
-                        this.hoverSound.play().catch(e => {});
-                    });
-                    button.addEventListener('click', () => {
-                        this.clickSound.currentTime = 0;
-                        this.clickSound.play().catch(e => {});
-                    });
-                });
-            }
-        }
-        
+
         class UIManager {
             constructor() {
                 this.views = document.querySelectorAll('.view');
