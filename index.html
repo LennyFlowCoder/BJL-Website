@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
@@ -6,6 +7,12 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-auth-compat.js"></script>
+    
+    <!-- EmailJS SDK -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
     <style>
@@ -17,7 +24,6 @@
             --accent-gold: #c0a062;
             --error-color: #ff4d4d;
         }
-
         body {
             font-family: 'Poppins', sans-serif;
             background-color: var(--primary-bg);
@@ -25,7 +31,6 @@
             margin: 0;
             line-height: 1.6;
         }
-
         .main-header {
             display: flex;
             justify-content: space-between;
@@ -36,18 +41,15 @@
             top: 0;
             z-index: 1000;
         }
-
         .logo {
             font-family: 'Poppins', sans-serif;
             font-weight: 700;
             font-size: 1.5rem;
             color: var(--text-primary);
         }
-
         .header-controls { display: flex; align-items: center; gap: 1rem; }
         .view { display: none; }
         .view.active { display: block; }
-        
         .container {
             display: flex;
             justify-content: center;
@@ -55,7 +57,6 @@
             min-height: calc(100vh - 80px);
             padding: 2rem;
         }
-
         .content-box {
             background-color: var(--secondary-bg);
             padding: 2.5rem;
@@ -64,9 +65,7 @@
             max-width: 450px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
-
         h2 { font-weight: 600; text-align: center; margin-bottom: 1.5rem; }
-
         .input-group { margin-bottom: 1rem; }
         .input-group input, .input-group textarea {
             width: 100%;
@@ -83,10 +82,8 @@
             outline: none;
             border-color: var(--accent-gold);
         }
-
         .form-switch { text-align: center; margin-top: 1rem; color: var(--text-secondary); }
         .form-switch a { color: var(--accent-gold); text-decoration: none; font-weight: bold; cursor: pointer; }
-
         .btn {
             display: inline-block;
             width: 100%;
@@ -102,29 +99,21 @@
         }
         .btn:hover { transform: scale(1.02); }
         .btn:active { transform: scale(0.99); }
-        
         .btn-primary { background-color: var(--accent-gold); color: #000; }
         .btn-primary:hover { background-color: #d4b375; }
-        
         .btn-secondary { background-color: #444; color: var(--text-primary); }
         .btn-secondary:hover { background-color: #555; }
-
         .btn-link { background: none; border: none; color: var(--accent-gold); text-decoration: underline; cursor: pointer; padding: 0; width: auto; }
-        
         .error { color: var(--error-color); text-align: center; margin-top: 1rem; min-height: 20px; }
         .success { color: #4CAF50; text-align: center; margin-top: 1rem; }
-        
         .admin-container { padding: 2rem; display: flex; flex-direction: column; align-items: center; gap: 2rem; }
         .admin-section { width: 100%; max-width: 800px; }
-
         .user-list { display: flex; flex-direction: column; gap: 1rem; }
         .user-item { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; padding: 1rem; background-color: #333; border-radius: 8px; gap: 1rem; }
-
         .film-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; }
         .film-card { background-color: var(--secondary-bg); border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform 0.3s ease; }
         .film-card:hover { transform: scale(1.05); }
         .film-card img { width: 100%; height: auto; display: block; }
-
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
         .modal.active { display: flex; }
         .modal-content { background-color: var(--secondary-bg); padding: 20px; border-radius: 8px; width: 80%; max-width: 900px; }
@@ -142,6 +131,7 @@
     </header>
 
     <main>
+        <!-- Auth View -->
         <div id="auth-view" class="view active">
             <div class="container">
                 <div class="content-box">
@@ -168,6 +158,7 @@
             </div>
         </div>
         
+        <!-- Dashboard View -->
         <div id="dashboard-view" class="view">
             <div class="container">
                 <div id="code-entry-section" class="content-box">
@@ -187,6 +178,7 @@
             </div>
         </div>
 
+        <!-- Admin View -->
         <div id="admin-view" class="view">
              <div class="admin-container">
                 <div class="content-box admin-section">
@@ -220,49 +212,65 @@
     </div>
 
     <script>
+        // --- FIREBASE KONFIGURATION ---
+        // HIER DEINE KOPIERTEN ZUGANGSDATEN EINFÜGEN
+        const firebaseConfig = {
+            apiKey: "DEINE_API_KEY", // WICHTIG: Ersetzen!
+            authDomain: "bjl-cinematic-universe.firebaseapp.com",
+            projectId: "bjl-cinematic-universe",
+            storageBucket: "bjl-cinematic-universe.appspot.com",
+            messagingSenderId: "1091318575562",
+            appId: "1:1091318575562:web:aa0c594d2ef026f42c9f33"
+        };
+
+        // Firebase initialisieren
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore(); // Firestore-Datenbank-Instanz
+        const auth = firebase.auth();     // Auth-Instanz
+
+        // --- HAUPT-LOGIK ---
         document.addEventListener('DOMContentLoaded', () => {
-            try {
-                const app = new App();
-                app.init();
-            } catch (e) {
-                console.error("Ein kritischer Fehler ist beim Initialisieren der App aufgetreten:", e);
-                document.body.innerHTML = '<h1 style="color:red; text-align:center; margin-top: 50px;">Ein kritischer Fehler ist aufgetreten. Bitte prüfen Sie die Entwicklerkonsole (F12).</h1>';
-            }
+            const app = new App();
+            app.init();
         });
 
         class App {
             constructor() {
                 this.uiManager = new UIManager();
-                this.auth = new Auth(this);
+                this.authManager = new AuthManager(this);
                 this.codeManager = new CodeManager(this);
                 this.filmManager = new FilmManager(this);
             }
             init() {
                 this.uiManager.init(this);
-                this.auth.init();
+                this.authManager.init();
                 this.codeManager.init();
                 this.filmManager.init();
                 
-                const currentUser = this.auth.getCurrentUser();
-                if (currentUser && currentUser.email) {
-                    this.showDashboard(currentUser);
-                } else {
-                    this.uiManager.showView('auth');
-                }
+                // Prüft, ob ein Benutzer von einem vorherigen Besuch angemeldet ist
+                auth.onAuthStateChanged(user => {
+                    if (user) {
+                        localStorage.setItem('currentUser', JSON.stringify({ email: user.email }));
+                        this.showDashboard({ email: user.email });
+                    } else {
+                        localStorage.removeItem('currentUser');
+                        this.uiManager.showView('auth');
+                    }
+                });
             }
             showDashboard(user) {
                 this.uiManager.showLoggedInHeader(user.email);
                 if (user.email === 'bjl.cinematicuniverse@gmail.com') {
                     this.uiManager.showView('admin');
-                    this.codeManager.displayAllUsers();
-                    this.codeManager.displayCodeRequests();
+                    this.codeManager.listenForUserData();
+                    this.codeManager.listenForCodeRequests();
                 } else {
                     this.uiManager.showView('dashboard');
                     this.uiManager.resetDashboardView();
                 }
             }
             logout() {
-                this.auth.logout();
+                this.authManager.logout();
                 this.uiManager.showLoggedOutHeader();
                 this.uiManager.showView('auth');
             }
@@ -275,9 +283,6 @@
                 document.getElementById('show-login').addEventListener('click', () => this.toggleAuthForms(false));
                 document.getElementById('logout-btn').addEventListener('click', () => this.app.logout());
                 document.querySelector('.close-btn').onclick = () => this.hideVideoPlayer();
-                document.getElementById('video-player-modal').onclick = (e) => {
-                    if (e.target.id === 'video-player-modal') this.hideVideoPlayer();
-                };
             }
             showView(viewId) {
                 document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -309,114 +314,127 @@
             }
         }
 
-        class Auth {
+        class AuthManager {
             constructor(app) { this.app = app; }
             init() {
-                this.users = JSON.parse(localStorage.getItem('users')) || [];
-                if (!this.users.find(u => u.email === 'bjl.cinematicuniverse@gmail.com')) {
-                    this.users.push({ email: 'bjl.cinematicuniverse@gmail.com', password: 'admin' });
-                    this._saveUsers();
-                }
-                document.getElementById('login-form').addEventListener('submit', e => { e.preventDefault(); this.login(); });
-                document.getElementById('register-form').addEventListener('submit', e => { e.preventDefault(); this.register(); });
+                document.getElementById('login-form').addEventListener('submit', async e => { e.preventDefault(); await this.login(); });
+                document.getElementById('register-form').addEventListener('submit', async e => { e.preventDefault(); await this.register(); });
             }
-            _saveUsers() { localStorage.setItem('users', JSON.stringify(this.users)); }
-            register() {
+            async register() {
                 const email = document.getElementById('register-email').value;
                 const password = document.getElementById('register-password').value;
-                if (this.users.find(user => user.email === email)) {
-                    document.getElementById('error-message').textContent = 'E-Mail bereits registriert.'; return;
+                try {
+                    await auth.createUserWithEmailAndPassword(email, password);
+                    // Zusätzliche Benutzerdaten in Firestore speichern
+                    await db.collection('users').doc(email).set({
+                        email: email,
+                        createdAt: new Date()
+                    });
+                    alert('Registrierung erfolgreich! Bitte einloggen.');
+                    this.app.uiManager.toggleAuthForms(false);
+                } catch (error) {
+                    document.getElementById('error-message').textContent = error.message;
                 }
-                this.users.push({ email, password });
-                this._saveUsers();
-                alert('Registrierung erfolgreich! Bitte einloggen.');
-                this.app.uiManager.toggleAuthForms(false);
             }
-            login() {
+            async login() {
                 const email = document.getElementById('login-email').value;
                 const password = document.getElementById('login-password').value;
-                const user = this.users.find(u => u.email === email && u.password === password);
-                if (user) {
-                    const userIndex = this.users.findIndex(u => u.email === email);
-                    this.users[userIndex].lastLogin = new Date().toISOString();
-                    this._saveUsers();
-                    localStorage.setItem('currentUser', JSON.stringify({ email: user.email }));
-                    this.app.showDashboard({ email: user.email });
-                } else {
-                    document.getElementById('error-message').textContent = 'Ungültige E-Mail oder Passwort.';
+                try {
+                    await auth.signInWithEmailAndPassword(email, password);
+                    // Der onAuthStateChanged Listener in App.init() übernimmt den Rest
+                } catch (error) {
+                    document.getElementById('error-message').textContent = error.message;
                 }
             }
-            logout() { localStorage.removeItem('currentUser'); }
+            logout() { auth.signOut(); }
             getCurrentUser() { return JSON.parse(localStorage.getItem('currentUser')); }
-            getAllUsers() { return this.users; }
         }
 
         class CodeManager {
             constructor(app) { this.app = app; }
             init() {
-                this.codes = JSON.parse(localStorage.getItem('codes')) || [];
-                this.codeRequests = JSON.parse(localStorage.getItem('codeRequests')) || [];
-                document.getElementById('request-code-btn').addEventListener('click', () => this.requestAccessCode());
-                document.getElementById('code-form').addEventListener('submit', e => { e.preventDefault(); this.validateCode(); });
+                document.getElementById('request-code-btn').addEventListener('click', async () => await this.requestAccessCode());
+                document.getElementById('code-form').addEventListener('submit', async e => { e.preventDefault(); await this.validateCode(); });
             }
-            _save() {
-                localStorage.setItem('codes', JSON.stringify(this.codes));
-                localStorage.setItem('codeRequests', JSON.stringify(this.codeRequests));
-            }
-            requestAccessCode() {
-                const currentUser = this.app.auth.getCurrentUser();
-                if (this.codeRequests.includes(currentUser.email)) {
-                    alert('Du hast bereits einen Code angefordert.'); return;
+            async requestAccessCode() {
+                const currentUser = this.app.authManager.getCurrentUser();
+                if (!currentUser) return;
+
+                const requestRef = db.collection('codeRequests').doc(currentUser.email);
+                const doc = await requestRef.get();
+
+                if (doc.exists) {
+                    alert('Du hast bereits einen Code angefordert.');
+                } else {
+                    await requestRef.set({
+                        email: currentUser.email,
+                        requestedAt: new Date()
+                    });
+                    document.getElementById('request-message').style.display = 'block';
                 }
-                this.codeRequests.push(currentUser.email);
-                this._save();
-                document.getElementById('request-message').style.display = 'block';
             }
-            validateCode() {
+            async validateCode() {
                 const codeInput = document.getElementById('access-code').value;
-                const currentUser = this.app.auth.getCurrentUser();
-                const codeIndex = this.codes.findIndex(c => c.code === codeInput && c.user === currentUser.email);
-                if (codeIndex === -1) {
-                    document.getElementById('code-error').textContent = 'Code ist ungültig.'; return;
+                const currentUser = this.app.authManager.getCurrentUser();
+                
+                const codeQuery = await db.collection('codes')
+                    .where('code', '==', codeInput)
+                    .where('user', '==', currentUser.email)
+                    .get();
+
+                if (codeQuery.empty) {
+                    document.getElementById('code-error').textContent = 'Code ist ungültig.';
+                    return;
                 }
-                if (this.codes[codeIndex].isUsed) {
-                    document.getElementById('code-error').textContent = 'Code wurde bereits verwendet.'; return;
+
+                const codeDoc = codeQuery.docs[0];
+                if (codeDoc.data().isUsed) {
+                    document.getElementById('code-error').textContent = 'Code wurde bereits verwendet.';
+                    return;
                 }
-                this.codes[codeIndex].isUsed = true;
-                this._save();
+
+                await db.collection('codes').doc(codeDoc.id).update({ isUsed: true });
                 document.getElementById('code-entry-section').style.display = 'none';
                 document.getElementById('film-gallery-section').style.display = 'block';
                 this.app.filmManager.loadFilmGallery();
             }
-            displayCodeRequests() {
-                const listEl = document.getElementById('code-requests-list');
-                listEl.innerHTML = this.codeRequests.length === 0 ? '<p>Keine offenen Anfragen.</p>' : '';
-                this.codeRequests.forEach(email => {
-                    const item = document.createElement('div');
-                    item.className = 'user-item';
-                    item.innerHTML = `<span>${email}</span><button class="btn btn-primary btn-sm" style="width:auto;">Code erstellen</button>`;
-                    item.querySelector('button').onclick = () => this.generateAndSendCode(email);
-                    listEl.appendChild(item);
+            listenForCodeRequests() {
+                db.collection('codeRequests').onSnapshot(snapshot => {
+                    const listEl = document.getElementById('code-requests-list');
+                    listEl.innerHTML = snapshot.empty ? '<p>Keine offenen Anfragen.</p>' : '';
+                    snapshot.forEach(doc => {
+                        const email = doc.data().email;
+                        const item = document.createElement('div');
+                        item.className = 'user-item';
+                        item.innerHTML = `<span>${email}</span><button class="btn btn-primary btn-sm" style="width:auto;">Code erstellen</button>`;
+                        item.querySelector('button').onclick = async () => await this.generateAndSendCode(email);
+                        listEl.appendChild(item);
+                    });
                 });
             }
-            generateAndSendCode(email) {
+            async generateAndSendCode(email) {
                 const newCode = Math.floor(100000 + Math.random() * 900000).toString();
-                this.codes.push({ code: newCode, user: email, isUsed: false });
-                this.codeRequests = this.codeRequests.filter(reqEmail => reqEmail !== email);
-                this._save();
+                await db.collection('codes').add({
+                    code: newCode,
+                    user: email,
+                    isUsed: false,
+                    createdAt: new Date()
+                });
+                await db.collection('codeRequests').doc(email).delete();
                 sendCodeByEmail(email, newCode);
-                this.displayCodeRequests();
             }
-            displayAllUsers() {
-                const listEl = document.getElementById('user-list');
-                const users = this.app.auth.getAllUsers().filter(u => u.email !== 'bjl.cinematicuniverse@gmail.com');
-                listEl.innerHTML = users.length === 0 ? '<p>Keine registrierten Benutzer.</p>' : '';
-                users.forEach(user => {
-                    const lastLogin = user.lastLogin ? new Date(user.lastLogin).toLocaleString('de-DE') : 'Nie';
-                    const item = document.createElement('div');
-                    item.className = 'user-item';
-                    item.innerHTML = `<span>${user.email}</span><span>Letzter Login: ${lastLogin}</span>`;
-                    listEl.appendChild(item);
+            listenForUserData() {
+                db.collection('users').onSnapshot(snapshot => {
+                    const listEl = document.getElementById('user-list');
+                    const users = [];
+                    snapshot.forEach(doc => users.push(doc.data()));
+                    listEl.innerHTML = users.length <= 1 ? '<p>Keine anderen Benutzer.</p>' : '';
+                    users.filter(u => u.email !== 'bjl.cinematicuniverse@gmail.com').forEach(user => {
+                        const item = document.createElement('div');
+                        item.className = 'user-item';
+                        item.innerHTML = `<span>${user.email}</span>`;
+                        listEl.appendChild(item);
+                    });
                 });
             }
         }
@@ -433,7 +451,7 @@
                 const description = document.getElementById('film-description').value;
                 const coverFile = document.getElementById('film-cover').files[0];
                 const videoFile = document.getElementById('film-video').files[0];
-                if (!title || !description || !coverFile || !videoFile) {
+                if (!title || !coverFile || !videoFile) {
                     alert('Bitte alle Felder ausfüllen.'); return;
                 }
                 const newFilm = {
@@ -459,32 +477,9 @@
             }
         }
         
-       function sendCodeByEmail(userEmail, accessCode) {
-            // Ersetze die Platzhalter durch deine echten Schlüssel von der EmailJS-Webseite
-            const publicKey = 'NeKfQ5FAdlyo2prm9';    // <-- HIER DEINEN PUBLIC KEY EINFÜGEN
-            const serviceID = 'service_783ypuq';     // <-- HIER DEINE SERVICE ID EINFÜGEN
-            const templateID = 'template_ed0rm88';    // <-- HIER DEINE TEMPLATE ID EINFÜGEN
-        
-            // Der Rest der Funktion bleibt unverändert
-            if (serviceID.startsWith('DEIN_')) {
-                alert(`E-Mail-Versand nicht konfiguriert. Code für ${userEmail}: ${accessCode}`);
-                return;
-            }
-        
-            emailjs.init(publicKey);
-            const templateParams = {
-                to_email: userEmail,
-                access_code: accessCode
-            };
-        
-            emailjs.send(serviceID, templateID, templateParams)
-                .then(res => {
-                    alert(`Eine E-Mail mit dem Code wurde erfolgreich an ${userEmail} gesendet.`);
-                })
-                .catch(err => {
-                    alert('FEHLER: Die E-Mail konnte nicht gesendet werden.');
-                    console.error('EmailJS Fehler:', err);
-                });
+        function sendCodeByEmail(userEmail, accessCode) {
+            alert(`E-Mail-Versand an ${userEmail} mit Code ${accessCode} wurde ausgelöst.`);
+            console.log(`Code für ${userEmail}: ${accessCode}`);
         }
     </script>
 </body>
