@@ -1,0 +1,443 @@
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streaming Plattform</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 20px;
+        }
+
+        .form-container, .dashboard-container {
+            background-color: #1e1e1e;
+            padding: 2rem 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid #2d2d2d;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        input[type="email"], input[type="password"], input[type="text"] {
+            display: block;
+            width: 100%;
+            padding: 0.9rem 1rem;
+            border: 1px solid #444;
+            border-radius: 8px;
+            background-color: #2b2b2b;
+            color: #e0e0e0;
+            font-size: 1rem;
+            box-sizing: border-box; /* Ensures padding doesn't affect width */
+        }
+        
+        input[type="email"]::placeholder, 
+        input[type="password"]::placeholder,
+        input[type="text"]::placeholder {
+            color: #888;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.9rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background-color: #e50914;
+            color: white;
+            margin-top: 1rem;
+        }
+
+        .btn-primary:hover {
+            background-color: #f40612;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #888;
+            margin: 1.5rem 0;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #444;
+        }
+
+        .divider:not(:empty)::before {
+            margin-right: .5em;
+        }
+
+        .divider:not(:empty)::after {
+            margin-left: .5em;
+        }
+
+        .btn-google {
+            background-color: #4285F4;
+            color: white;
+        }
+        
+        .btn-google:hover {
+            background-color: #5a95f5;
+        }
+
+        .switch-form-link {
+            text-align: center;
+            margin-top: 2rem;
+            color: #aaa;
+        }
+
+        .switch-form-link a {
+            color: #e50914;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .switch-form-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Dashboard Styles */
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .admin-header .btn-secondary {
+            background-color: #333;
+            color: #e0e0e0;
+            padding: 0.6rem 1rem;
+            width: auto;
+            font-size: 0.9rem;
+        }
+        
+        .admin-header .btn-secondary:hover {
+            background-color: #444;
+        }
+        
+        #logout-button {
+            background: none;
+            color: #e50914;
+            text-align: right;
+            padding: 0;
+            font-weight: normal;
+            width: auto;
+        }
+
+        .content-area h3 {
+            border-bottom: 1px solid #444;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .user-content, .code-entry {
+            text-align: center;
+        }
+
+        .user-list-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .user-list-content {
+            background: #1e1e1e;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .user-list-content h3 {
+            margin-top: 0;
+        }
+
+        .user-list-content ul {
+            list-style: none;
+            padding: 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .user-list-content li {
+            background: #2b2b2b;
+            padding: 0.8rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+
+        <div id="login-view">
+            <div class="form-container">
+                <h2>Anmelden</h2>
+                <form id="login-form">
+                    <div class="input-group">
+                        <input type="email" id="login-email" placeholder="E-Mail" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="login-password" placeholder="Passwort" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Anmelden</button>
+                </form>
+                <div class="divider">oder</div>
+                <button id="google-login-btn" class="btn-google">Mit Google anmelden</button>
+                <p class="switch-form-link">Noch kein Konto? <a href="#" id="show-register-link">Registrieren</a></p>
+            </div>
+        </div>
+
+        <div id="register-view" class="hidden">
+            <div class="form-container">
+                <h2>Konto erstellen</h2>
+                <form id="register-form">
+                    <div class="input-group">
+                        <input type="email" id="register-email" placeholder="E-Mail" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="register-password" placeholder="Passwort" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Registrieren</button>
+                </form>
+                <p class="switch-form-link">Schon ein Konto? <a href="#" id="show-login-link">Anmelden</a></p>
+            </div>
+        </div>
+        
+        <div id="dashboard-view" class="hidden">
+            <div class="dashboard-container">
+                
+                <div id="admin-controls" class="admin-header hidden">
+                    <div>
+                         <button id="request-codes-btn" class="btn-secondary">Codes anfordern</button>
+                         <button id="show-users-btn" class="btn-secondary">Wer ist online?</button>
+                    </div>
+                    <button id="admin-logout-button">Abmelden</button>
+                </div>
+                
+                <div id="user-controls" class="admin-header hidden">
+                     <h2 id="welcome-user">Willkommen!</h2>
+                     <button id="user-logout-button">Abmelden</button>
+                </div>
+                
+                <hr>
+
+                <div id="admin-content" class="content-area hidden">
+                    <h3>Admin Dashboard</h3>
+                    <p>Hier siehst du deine Filme und verwaltest den Zugriff.</p>
+                </div>
+
+                <div id="user-content" class="content-area hidden">
+                    <h3>Deine Filme</h3>
+                    <div class="code-entry">
+                        <p>Bitte gib einen Code ein, um auf die Inhalte zuzugreifen.</p>
+                        <div class="input-group">
+                            <input type="text" id="access-code" placeholder="Zugangscode">
+                        </div>
+                        <button id="submit-code-btn" class="btn-primary" style="width: auto; padding: 0.8rem 1.5rem;">Code einlösen</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="user-list-modal" class="user-list-modal hidden">
+            <div class="user-list-content">
+                <h3>Eingeloggte Benutzer</h3>
+                <ul id="online-user-list">
+                    </ul>
+                <button id="close-modal-btn" class="btn-primary" style="margin-top: 1rem;">Schließen</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const loginView = document.getElementById('login-view');
+            const registerView = document.getElementById('register-view');
+            const dashboardView = document.getElementById('dashboard-view');
+
+            const showRegisterLink = document.getElementById('show-register-link');
+            const showLoginLink = document.getElementById('show-login-link');
+            
+            const loginForm = document.getElementById('login-form');
+            const loginEmailInput = document.getElementById('login-email');
+
+            // --- Admin Elements ---
+            const adminControls = document.getElementById('admin-controls');
+            const adminContent = document.getElementById('admin-content');
+            const requestCodesBtn = document.getElementById('request-codes-btn');
+            const showUsersBtn = document.getElementById('show-users-btn');
+            const adminLogoutBtn = document.getElementById('admin-logout-button');
+            
+            // --- User Elements ---
+            const userControls = document.getElementById('user-controls');
+            const userContent = document.getElementById('user-content');
+            const welcomeUserHeader = document.getElementById('welcome-user');
+            const userLogoutBtn = document.getElementById('user-logout-button');
+            const submitCodeBtn = document.getElementById('submit-code-btn');
+
+            // --- Modal Elements ---
+            const userListModal = document.getElementById('user-list-modal');
+            const onlineUserList = document.getElementById('online-user-list');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+
+            // --- App State ---
+            const ADMIN_EMAIL = 'bjl.cinematicuniverse@gmail.com';
+
+            // --- View Switching Logic ---
+            showRegisterLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                loginView.classList.add('hidden');
+                registerView.classList.remove('hidden');
+            });
+
+            showLoginLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                registerView.classList.add('hidden');
+                loginView.classList.remove('hidden');
+            });
+
+            // --- Authentication Logic ---
+            const handleLogin = (email) => {
+                loginView.classList.add('hidden');
+                registerView.classList.add('hidden');
+                dashboardView.classList.remove('hidden');
+
+                if (email.toLowerCase() === ADMIN_EMAIL) {
+                    // Show Admin View
+                    adminControls.classList.remove('hidden');
+                    adminContent.classList.remove('hidden');
+                    userControls.classList.add('hidden');
+                    userContent.classList.add('hidden');
+                } else {
+                    // Show User View
+                    userControls.classList.remove('hidden');
+                    userContent.classList.remove('hidden');
+                    adminControls.classList.add('hidden');
+                    adminContent.classList.add('hidden');
+                    welcomeUserHeader.textContent = `Willkommen, ${email}!`;
+                }
+            };
+
+            const handleLogout = () => {
+                dashboardView.classList.add('hidden');
+                loginView.classList.remove('hidden');
+                // Clear inputs
+                loginEmailInput.value = '';
+                document.getElementById('login-password').value = '';
+            };
+            
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = loginEmailInput.value;
+                if (email) {
+                    handleLogin(email);
+                }
+            });
+
+            // This is a placeholder for a real Google Sign-In
+            document.getElementById('google-login-btn').addEventListener('click', () => {
+                // In a real app, this would trigger the Google OAuth flow.
+                // We'll simulate it with a prompt.
+                const email = prompt("Bitte gib deine Google E-Mail-Adresse ein, um die Anmeldung zu simulieren:", "user@gmail.com");
+                if (email) {
+                    handleLogin(email);
+                }
+            });
+
+            // --- Dashboard Button Logic ---
+            requestCodesBtn.addEventListener('click', () => {
+                // In a real app, this would call a backend to generate a secure, unique code.
+                const newCode = `CODE-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+                alert(`Neuer Code generiert:\n\n${newCode}\n\nGib diesen Code an einen Benutzer weiter.`);
+            });
+
+            showUsersBtn.addEventListener('click', () => {
+                // In a real app, this data would come from a server tracking active sessions.
+                const fakeUsers = [
+                    'user1@example.com',
+                    'another.user@web.de',
+                    'test.account@gmail.com',
+                    ADMIN_EMAIL // The admin is also online
+                ];
+                onlineUserList.innerHTML = ''; // Clear previous list
+                fakeUsers.forEach(user => {
+                    const li = document.createElement('li');
+                    li.textContent = user;
+                    onlineUserList.appendChild(li);
+                });
+                userListModal.classList.remove('hidden');
+            });
+
+            submitCodeBtn.addEventListener('click', () => {
+                const code = document.getElementById('access-code').value;
+                if (code.startsWith('CODE-')) {
+                     alert('Code akzeptiert! Deine Filme werden jetzt angezeigt.');
+                     document.querySelector('.code-entry').innerHTML = '<p>Zugriff gewährt. Deine exklusiven Filminhalte sind hier.</p>';
+                } else {
+                     alert('Ungültiger Code. Bitte versuche es erneut.');
+                }
+            });
+
+            closeModalBtn.addEventListener('click', () => {
+                userListModal.classList.add('hidden');
+            });
+
+            adminLogoutBtn.addEventListener('click', handleLogout);
+            userLogoutBtn.addEventListener('click', handleLogout);
+
+        });
+    </script>
+</body>
+</html>
