@@ -477,8 +477,40 @@
         }
         
         function sendCodeByEmail(userEmail, accessCode) {
-            alert(`E-Mail-Versand an ${userEmail} mit Code ${accessCode} wurde ausgelöst.`);
-            console.log(`Code für ${userEmail}: ${accessCode}`);
+            // --- Deine Daten hier ---
+            const publicKey = 'NeKfQ5FAdlyo2prm9';
+            const serviceID = 'service_783ypuq';
+            const templateID = 'template_ed0rm88';
+            
+            // --- START DER DIAGNOSE ---
+            console.log("1. Funktion 'sendCodeByEmail' wird aufgerufen für:", userEmail);
+        
+            if (serviceID.startsWith('DEIN_')) {
+                console.warn("2. FEHLER: EmailJS ist nicht mit echten Daten konfiguriert.");
+                alert(`E-Mail-Versand nicht konfiguriert. Code für ${userEmail}: ${accessCode}`);
+                return;
+            }
+        
+            emailjs.init(publicKey);
+            
+            const templateParams = {
+                to_email: userEmail,
+                access_code: accessCode,
+                from_name: 'BJL Cinematic Universe'
+            };
+            
+            console.log("2. Sende jetzt die Anfrage an EmailJS mit diesen Daten:", templateParams);
+        
+            emailjs.send(serviceID, templateID, templateParams)
+                .then(function(response) {
+                   // DIESE NACHRICHT IST ENTSCHEIDEND
+                   console.log('3. ERFOLG! EmailJS meldet "gesendet":', response.status, response.text);
+                   alert(`E-Mail wurde laut EmailJS erfolgreich versendet. Prüfe jetzt Spam-Ordner und EmailJS-Logs!`);
+                }, function(error) {
+                   // WENN DIESE NACHRICHT ERSCHEINT, GIBT ES DOCH EINEN FEHLER
+                   console.error('3. FEHLER! EmailJS meldet ein Problem:', error);
+                   alert('FEHLER: Die E-Mail konnte nicht gesendet werden. Siehe F12-Konsole für Details.');
+                });
         }
     </script>
 </body>
