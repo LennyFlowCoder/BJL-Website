@@ -143,7 +143,7 @@
             margin-bottom: 2rem;
             padding: 30px;
         }
-        .user-item { background-color: rgba(0, 0, 0, 0.3); border-radius: 10px; }
+        .user-item { background-color: rgba(0, 0, 0, 0.3); border-radius: 10px; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
         .film-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; width: 100%; max-width: 1200px; }
         .film-card {
             background: rgba(255, 255, 255, 0.1);
@@ -275,13 +275,11 @@
                 this.codeManager = new CodeManager(this);
                 this.filmManager = new FilmManager(this);
                 this.uiManager = new UIManager();
-                this.soundManager = new SoundManager();
             }
             init() {
                 this.auth.init();
                 this.codeManager.init();
                 this.filmManager.init();
-                this.soundManager.init();
                 
                 const currentUser = this.auth.getCurrentUser();
                 if (currentUser) {
@@ -311,17 +309,6 @@
             }
         }
         
-        class SoundManager {
-            constructor() { this.hoverSound = new Audio('assets/hover.mp3'); this.clickSound = new Audio('assets/click.mp3'); this.hoverSound.volume = 0.3; this.clickSound.volume = 0.5; }
-            init() {
-                const buttons = document.querySelectorAll('.btn, .film-card, .close-btn, a');
-                buttons.forEach(button => {
-                    button.addEventListener('mouseenter', () => { this.hoverSound.currentTime = 0; this.hoverSound.play().catch(e => {}); });
-                    button.addEventListener('click', () => { this.clickSound.currentTime = 0; this.clickSound.play().catch(e => {}); });
-                });
-            }
-        }
-        
         class UIManager {
             constructor() { this.views = document.querySelectorAll('.view'); this.headerControls = document.getElementById('header-controls'); this.welcomeUser = document.getElementById('welcome-user'); }
             showView(viewId) { this.views.forEach(view => { view.classList.remove('active'); if (view.id === `${viewId}-view`) view.classList.add('active'); }); }
@@ -338,107 +325,57 @@
             login() { const email = document.getElementById('login-email').value, password = document.getElementById('login-password').value; const user = this.users.find(u => u.email === email && u.password === password); if (user) { const userIndex = this.users.findIndex(u => u.email === email); this.users[userIndex].lastLogin = new Date().toISOString(); this._saveUsers(); localStorage.setItem('currentUser', JSON.stringify({ email: user.email })); this.app.showDashboard({ email: user.email }); } else { document.getElementById('error-message').textContent = 'Ungültige E-Mail oder Passwort.'; } }
             logout() { localStorage.removeItem('currentUser'); }
             getCurrentUser() { return JSON.parse(localStorage.getItem('currentUser')); }
-            getAllUsers() { return this.users; }
+            getAllUsers() { return JSON.parse(localStorage.getItem('users')) || []; }
         }
 
-        // ===============================================
-        // FINAL KORRIGIERTE CODE-MANAGER KLASSE
-        // ===============================================
         class CodeManager {
-            constructor(app) {
-                this.app = app;
-            }
-        
-            init() {
-                document.getElementById('request-code-btn').addEventListener('click', () => this.requestAccessCode());
-                document.getElementById('code-form').addEventListener('submit', e => { e.preventDefault(); this.validateCode(); });
-            }
-        
+            constructor(app) { this.app = app; }
+            init() { document.getElementById('request-code-btn').addEventListener('click', () => this.requestAccessCode()); document.getElementById('code-form').addEventListener('submit', e => { e.preventDefault(); this.validateCode(); }); }
             requestAccessCode() {
                 const currentUser = this.app.auth.getCurrentUser();
                 if (!currentUser) return;
-        
                 let requests = JSON.parse(localStorage.getItem('codeRequests')) || [];
-                if (requests.includes(currentUser.email)) {
-                    alert('Du hast bereits einen Code angefordert.');
-                    return;
-                }
-        
+                // if (requests.includes(currentUser.email)) { alert('Du hast bereits einen Code angefordert.'); return; } // Entfernt, um mehrfache Anfragen zu erlauben
                 requests.push(currentUser.email);
                 localStorage.setItem('codeRequests', JSON.stringify(requests));
                 document.getElementById('request-message').style.display = 'block';
             }
-        
             displayCodeRequests() {
                 const listElement = document.getElementById('code-requests-list');
                 if (!listElement) return;
-        
                 const requests = JSON.parse(localStorage.getItem('codeRequests')) || [];
-        
                 listElement.innerHTML = '';
-                if (requests.length === 0) {
-                    listElement.innerHTML = '<p>Keine offenen Anfragen.</p>';
-                    return;
-                }
-        
-                requests.forEach(email => {
-                    const item = document.createElement('div');
-                    item.className = 'user-item';
-                    item.innerHTML = `<span>${email}</span><button class="btn btn-primary btn-sm">Code erstellen</button>`;
-                    item.querySelector('button').addEventListener('click', () => this.generateAndSendCode(email));
-                    listElement.appendChild(item);
-                });
+                if (requests.length === 0) { listElement.innerHTML = '<p>Keine offenen Anfragen.</p>'; return; }
+                requests.forEach(email => { const item = document.createElement('div'); item.className = 'user-item'; item.innerHTML = `<span>${email}</span><button class="btn btn-primary btn-sm">Code erstellen</button>`; item.querySelector('button').addEventListener('click', () => this.generateAndSendCode(email)); listElement.appendChild(item); });
             }
-        
             generateAndSendCode(email) {
                 const newCode = Math.floor(100000 + Math.random() * 900000).toString();
-                
                 let codes = JSON.parse(localStorage.getItem('codes')) || [];
                 codes.push({ code: newCode, user: email, isUsed: false, createdAt: new Date().toISOString() });
                 localStorage.setItem('codes', JSON.stringify(codes));
-                
                 let requests = JSON.parse(localStorage.getItem('codeRequests')) || [];
                 const updatedRequests = requests.filter(reqEmail => reqEmail !== email);
                 localStorage.setItem('codeRequests', JSON.stringify(updatedRequests));
-                
                 sendCodeByEmail(email, newCode);
                 this.displayCodeRequests();
             }
-        
             displayAllUsers() {
                 const listElement = document.getElementById('user-list');
                 if (!listElement) return;
-        
-                const allUsers = JSON.parse(localStorage.getItem('users')) || [];
-                
+                const allUsers = this.app.auth.getAllUsers();
                 listElement.innerHTML = '';
-                allUsers.forEach(user => {
-                    if (user.email === 'bjl.cinematicuniverse@gmail.com') return;
-                    const lastLogin = user.lastLogin ? new Date(user.lastLogin).toLocaleString('de-DE') : 'Nie';
-                    const item = document.createElement('div');
-                    item.className = 'user-item';
-                    item.innerHTML = `<span><strong>E-Mail:</strong> ${user.email}</span><span><strong>Login:</strong> ${lastLogin}</span>`;
-                    listElement.appendChild(item);
-                });
+                allUsers.forEach(user => { if (user.email === 'bjl.cinematicuniverse@gmail.com') return; const lastLogin = user.lastLogin ? new Date(user.lastLogin).toLocaleString('de-DE') : 'Nie'; const item = document.createElement('div'); item.className = 'user-item'; item.innerHTML = `<span><strong>E-Mail:</strong> ${user.email}</span><span><strong>Login:</strong> ${lastLogin}</span>`; listElement.appendChild(item); });
             }
-
             validateCode() {
                 const codeInput = document.getElementById('access-code').value;
                 const currentUser = this.app.auth.getCurrentUser();
                 const codeError = document.getElementById('code-error');
                 codeError.textContent = '';
-                
                 let codes = JSON.parse(localStorage.getItem('codes')) || [];
                 const codeIndex = codes.findIndex(c => c.code === codeInput && c.user === currentUser.email && !c.isUsed);
-        
-                if (codeIndex === -1) {
-                    codeError.textContent = 'Ungültiger oder bereits verwendeter Code.';
-                    return;
-                }
-                
+                if (codeIndex === -1) { codeError.textContent = 'Ungültiger oder bereits verwendeter Code.'; return; }
                 codes[codeIndex].isUsed = true;
                 localStorage.setItem('codes', JSON.stringify(codes));
-                
                 document.getElementById('code-entry-section').style.display = 'none';
                 document.getElementById('film-gallery-section').style.display = 'block';
                 this.app.filmManager.loadFilmGallery();
@@ -454,18 +391,14 @@
                 document.querySelector('.close-btn').onclick = () => this.hideVideoPlayer();
                 document.getElementById('video-player-modal').addEventListener('click', (e) => { if (e.target.id === 'video-player-modal') this.hideVideoPlayer(); });
             }
-            _saveFilms(films) { localStorage.setItem('films', JSON.stringify(films)); }
             async uploadFilm() {
                 const CLOUD_NAME = "dgsfozqb7", UPLOAD_PRESET = "pkd40q5y";
                 const title = document.getElementById('film-title').value, description = document.getElementById('film-description').value, coverFile = document.getElementById('film-cover').files[0], videoFile = document.getElementById('film-video').files[0];
                 const uploadButton = document.querySelector('#upload-form button[type="submit"]');
-
                 if (!title || !description || !coverFile || !videoFile) { alert('Bitte alle Felder ausfüllen.'); return; }
-                if (CLOUD_NAME.startsWith("DEIN_") || UPLOAD_PRESET.startsWith("DEIN_")) { alert("Bitte trage zuerst deinen Cloudinary Cloud Name und Upload Preset Namen im Skript ein!"); return; }
-
+                if (CLOUD_NAME.startsWith("DEIN_") || UPLOAD_PRESET.startsWith("DEIN_")) { alert("Du dummer Affe auf bananenjagt"); return; }
                 uploadButton.disabled = true;
                 uploadButton.textContent = 'Lade hoch...';
-
                 try {
                     const uploadFileToCloudinary = async (file, resourceType) => {
                         const formData = new FormData();
@@ -483,7 +416,7 @@
                     const videoURL = await uploadFileToCloudinary(videoFile, 'video');
                     const films = JSON.parse(localStorage.getItem('films')) || [];
                     films.push({ id: Date.now(), title, description, cover: coverURL, video: videoURL });
-                    this._saveFilms(films);
+                    localStorage.setItem('films', JSON.stringify(films));
                     const successMsg = document.getElementById('upload-success');
                     successMsg.style.display = 'block';
                     document.getElementById('upload-form').reset();
