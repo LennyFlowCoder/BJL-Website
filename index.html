@@ -459,9 +459,32 @@
             }
         }
         
-        function sendCodeByEmail(userEmail, accessCode) {
-            alert(`E-Mail-Versand an ${userEmail} mit Code ${accessCode} wurde ausgelöst. (Für echten Versand EmailJS konfigurieren)`);
-            console.log(`Code für ${userEmail}: ${accessCode}`);
+       function sendCodeByEmail(userEmail, accessCode) {
+            // Ersetze die Platzhalter durch deine echten Schlüssel von der EmailJS-Webseite
+            const publicKey = NeKfQ5FAdlyo2prm9;    // <-- HIER DEINEN PUBLIC KEY EINFÜGEN
+            const serviceID = service_783ypuq;     // <-- HIER DEINE SERVICE ID EINFÜGEN
+            const templateID = template_ed0rm88;    // <-- HIER DEINE TEMPLATE ID EINFÜGEN
+        
+            // Der Rest der Funktion bleibt unverändert
+            if (serviceID.startsWith('DEIN_')) {
+                alert(`E-Mail-Versand nicht konfiguriert. Code für ${userEmail}: ${accessCode}`);
+                return;
+            }
+        
+            emailjs.init(publicKey);
+            const templateParams = {
+                to_email: userEmail,
+                access_code: accessCode
+            };
+        
+            emailjs.send(serviceID, templateID, templateParams)
+                .then(res => {
+                    alert(`Eine E-Mail mit dem Code wurde erfolgreich an ${userEmail} gesendet.`);
+                })
+                .catch(err => {
+                    alert('FEHLER: Die E-Mail konnte nicht gesendet werden.');
+                    console.error('EmailJS Fehler:', err);
+                });
         }
     </script>
 </body>
