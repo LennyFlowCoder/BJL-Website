@@ -13,8 +13,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
     <style>
-        /* DEIN CSS-CODE BLEIBT HIER UNVERÄNDERT. */
-        /* Aus Platzgründen hier ausgelassen, einfach dein bisheriges CSS verwenden. */
         :root {
             --color-1: #ee7752;
             --color-2: #e73c7e;
@@ -160,7 +158,7 @@
         /* --- Disney+ Style Film Gallery --- */
         #film-gallery-section {
              width: 100%;
-             padding: 0 2rem; /* Padding for the sides */
+             padding: 0 2rem;
              box-sizing: border-box;
         }
         .film-carousel-container {
@@ -168,7 +166,6 @@
             overflow-x: auto;
             padding: 1rem 0;
         }
-        /* Hide scrollbar but keep functionality */
         .film-carousel-container::-webkit-scrollbar { display: none; }
         .film-carousel-container { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -176,20 +173,25 @@
             display: flex;
             flex-direction: row;
             gap: 1.5rem;
+            padding-bottom: 1rem;
         }
         .film-card {
-            flex: 0 0 auto; /* Prevent shrinking/growing */
-            width: 250px; /* Fixed width for cards */
+            flex: 0 0 auto;
+            width: 250px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             overflow: hidden;
             cursor: pointer;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .film-card:hover { transform: scale(1.05); }
         .film-card img { width: 100%; height: auto; display: block; }
-        .film-card .film-info { display: none; } /* Info on hover removed for cleaner look */
+        .film-card .film-info { display: none; }
         
         /* --- Modal & Other Styles --- */
         .modal { position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.85); display: none; justify-content: center; align-items: center; }
@@ -294,10 +296,18 @@
                     </form>
                 </div>
 
-                <div id="user-list-section" class="glass-box admin-section">
+                <div id="user-list-section" class="glass-box admin-section" style="grid-column: 1 / -1;">
                     <h2>Benutzerübersicht</h2>
                     <div id="user-list"></div>
                 </div>
+
+                <div id="manage-films-section" class="glass-box admin-section" style="grid-column: 1 / -1;">
+                    <h2>Filme verwalten</h2>
+                    <div class="film-carousel-container">
+                         <div id="manageable-film-list" class="film-carousel"></div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </main>
@@ -313,24 +323,21 @@
 
 
     <script>
-        // --- SCHRITT 2: FÜGE DEINE FIREBASE KONFIGURATION HIER EIN ---
         const firebaseConfig = {
           apiKey: "AIzaSyAKr4suek_0T5QzRzTtHUMxuA4Quulk6_k",
           authDomain: "bjl-cinematic-universe.firebaseapp.com",
           databaseURL: "https://bjl-cinematic-universe-default-rtdb.europe-west1.firebasedatabase.app",
           projectId: "bjl-cinematic-universe",
-          storageBucket: "bjl-cinematic-universe.firebasestorage.app",
+          storageBucket: "bjl-cinematic-universe.appspot.com",
           messagingSenderId: "1091318575562",
           appId: "1:1091318575562:web:aa0c594d2ef026f42c9f33",
           measurementId: "G-YHFLB8C8CR"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // --- SCHRITT 5: FÜGE DEINE ADMIN-UID HIER EIN ---
         const ADMIN_UID = "w8T7zyLsaVcj2X9I4OYiYl93xy22";
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -360,9 +367,9 @@
                         this.uiManager.showView('admin');
                         this.codeManager.displayCodeRequests();
                         this.codeManager.displayAllUsers();
+                        this.filmManager.displayManageableFilms(); // <-- HIER HINZUGEFÜGT
                     } else {
                         this.uiManager.showView('dashboard');
-                        // Hier könnte man prüfen, ob der User bereits einen gültigen Code hat
                     }
                 } else {
                     this.uiManager.showLoggedOutHeader();
@@ -403,7 +410,6 @@
                 this.app.uiManager.clearError();
                 try {
                     const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                    // Optional: User-Dokument in Firestore anlegen
                     await db.collection('users').doc(userCredential.user.uid).set({
                         email: userCredential.user.email,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -449,7 +455,6 @@
             displayCodeRequests() {
                 const listElement = document.getElementById('code-requests-list');
                 if (!listElement) return;
-                // Echtzeit-Listener
                 db.collection('codeRequests').onSnapshot(snapshot => {
                     listElement.innerHTML = '';
                     if (snapshot.empty) {
@@ -476,9 +481,8 @@
                         isUsed: false,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
-                    // Anfrage aus der Liste löschen
                     await db.collection('codeRequests').doc(userId).delete();
-                    sendCodeByEmail(email, newCode); // EmailJS Funktion
+                    sendCodeByEmail(email, newCode);
                 } catch (error) { console.error("Fehler beim Erstellen des Codes: ", error); alert("Code konnte nicht erstellt werden."); }
             }
 
@@ -536,7 +540,6 @@
             }
             
             async uploadFilm() {
-                // DEINE CLOUDINARY-DATEN HIER
                 const CLOUD_NAME = "dgsfozqb7", UPLOAD_PRESET = "pkd40q5y";
                 const title = document.getElementById('film-title').value;
                 const description = document.getElementById('film-description').value;
@@ -566,7 +569,6 @@
                     uploadButton.textContent = 'Lade Video hoch...';
                     const videoURL = await uploadFileToCloudinary(videoFile, 'video');
 
-                    // Film-Metadaten in Firestore speichern
                     await db.collection('films').add({
                         title,
                         description,
@@ -612,9 +614,59 @@
 
             showVideoPlayer(film) { const modal = document.getElementById('video-player-modal'); document.getElementById('video-player').src = film.video; document.getElementById('video-title').textContent = film.title; document.getElementById('video-description').textContent = film.description; modal.classList.add('active'); }
             hideVideoPlayer() { const modal = document.getElementById('video-player-modal'); const videoPlayer = document.getElementById('video-player'); modal.classList.remove('active'); videoPlayer.pause(); videoPlayer.src = ""; }
+
+            // NEUE FUNKTIONEN ZUM VERWALTEN UND LÖSCHEN
+            async displayManageableFilms() {
+                const filmList = document.getElementById('manageable-film-list');
+                if (!filmList) return;
+
+                filmList.innerHTML = '<p>Lade Filme zum Verwalten...</p>';
+                try {
+                    db.collection('films').orderBy('uploadedAt', 'desc').onSnapshot(snapshot => {
+                        filmList.innerHTML = '';
+                        if (snapshot.empty) {
+                            filmList.innerHTML = '<p>Keine Filme zum Verwalten vorhanden.</p>';
+                            return;
+                        }
+                        snapshot.forEach(doc => {
+                            const film = { id: doc.id, ...doc.data() };
+                            const filmCard = document.createElement('div');
+                            filmCard.className = 'film-card';
+                            filmCard.style.width = '200px'; 
+                            
+                            const deleteButton = document.createElement('button');
+                            deleteButton.textContent = 'Löschen';
+                            deleteButton.className = 'btn btn-primary';
+                            deleteButton.style.margin = '10px';
+                            deleteButton.onclick = () => this.deleteFilm(film.id, film.title);
+
+                            filmCard.innerHTML = `<img src="${film.cover}" alt="${film.title}" style="cursor:default;">`;
+                            filmCard.appendChild(deleteButton);
+                            filmList.appendChild(filmCard);
+                        });
+                    });
+                } catch (error) {
+                    console.error("Fehler beim Laden der Filme zum Verwalten: ", error);
+                    filmList.innerHTML = '<p>Filme konnten nicht geladen werden.</p>';
+                }
+            }
+
+            async deleteFilm(filmId, filmTitle) {
+                const isConfirmed = confirm(`Möchtest du den Film "${filmTitle}" wirklich löschen? Der Eintrag wird aus der App entfernt.`);
+
+                if (isConfirmed) {
+                    try {
+                        await db.collection('films').doc(filmId).delete();
+                        alert(`Der Film "${filmTitle}" wurde erfolgreich aus der App entfernt.`);
+                        alert("WICHTIG: Um Speicherplatz freizugeben, lösche die Dateien jetzt manuell in deiner Cloudinary Media Library!");
+                    } catch (error) {
+                        console.error("Fehler beim Löschen des Films: ", error);
+                        alert("Der Film konnte nicht aus der Datenbank gelöscht werden.");
+                    }
+                }
+            }
         }
         
-        // Deine EmailJS-Funktion bleibt unverändert
         function sendCodeByEmail(userEmail, accessCode) {
             const publicKey = 'NeKfQ5FAdlyo2prm9', serviceID = 'service_783ypuq', templateID = 'template_ed0rm88';
             emailjs.init(publicKey);
@@ -630,5 +682,4 @@
 
 </body>
 </html>
-
-
+was kann ich machen um die filme nicht manuell in cloudinary zu löschen sondern über die seite selber?
