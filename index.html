@@ -348,6 +348,37 @@
             app.init();
         });
 
+        class NotificationManager {
+            constructor() {
+                this.messaging = firebase.messaging();
+            }
+        
+            async init() {
+                try {
+                    // 1. Um Erlaubnis bitten
+                    const permission = await Notification.requestPermission();
+                    if (permission === 'granted') {
+                        console.log('Notification permission granted.');
+                        
+                        // 2. Den einzigartigen Token abrufen
+                        const token = await this.messaging.getToken({ vapidKey: 'BOPew2Z6oAVYH61MawjjGTfvR7pK1lIQ8HanvZBhhsUJVmRR4iS0s5BjWqUQsj5c74F0v_gI9v1XbA7GEA_A-cI' }); // Vapid Key aus Firebase Konsole holen
+                        
+                        if (token) {
+                            // 3. Token in Firestore speichern, damit wir wissen, wohin wir senden sollen
+                            console.log('FCM Token:', token);
+                            await db.collection('adminFcmTokens').doc(ADMIN_UID).set({ token: token }, { merge: true });
+                        } else {
+                            console.log('No registration token available. Request permission to generate one.');
+                        }
+                    } else {
+                        console.log('Unable to get permission to notify.');
+                    }
+                } catch (err) {
+                    console.log('An error occurred while retrieving token. ', err);
+                }
+            }
+        }
+        
         class App {
             constructor() {
                 this.authManager = new AuthManager(this);
@@ -355,7 +386,22 @@
                 this.filmManager = new FilmManager(this);
                 this.uiManager = new UIManager();
             }
-
+            // In der App Klasse
+            constructor() {
+                // ... bestehende Manager
+                this.notificationManager = new NotificationManager(); // Hinzufügen
+            }
+            
+            // In der onAuthStateChange Methode
+            async onAuthStateChange(user) {
+                if (user) {
+                    // ...
+                    if (isAdmin) {
+                        // ... bestehende Admin-Funktionen
+                        this.notificationManager.init(); // Hinzufügen, um den Admin zu registrieren
+                    } // ...
+                } // ...
+            }
             init() {
                 this.authManager.init();
                 this.filmManager.init();
@@ -697,4 +743,5 @@
 </script>
 </body>
 </html>
+
 
