@@ -1,5 +1,6 @@
 <html lang="de">
 <head>
+    <link rel="manifest" href="/manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BJL Cinematic Universe</title>
@@ -679,7 +680,18 @@
                 });
         }
     </script>
-
+    <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(registration => {
+          console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        })
+        .catch(err => {
+          console.log('ServiceWorker registration failed: ', err);
+        });
+    });
+  }
+</script>
 </body>
 </html>
-was kann ich machen um die filme nicht manuell in cloudinary zu löschen sondern über die seite selber?
