@@ -379,35 +379,23 @@
             }
         }
         
+        // ERSETZE DEINE BISHERIGE 'class App' MIT DIESEM KOMPLETTEN BLOCK
+
         class App {
             constructor() {
                 this.authManager = new AuthManager(this);
                 this.codeManager = new CodeManager(this);
                 this.filmManager = new FilmManager(this);
                 this.uiManager = new UIManager();
+                this.notificationManager = new NotificationManager(); // Korrekt hier hinzugefügt
             }
-            // In der App Klasse
-            constructor() {
-                // ... bestehende Manager
-                this.notificationManager = new NotificationManager(); // Hinzufügen
-            }
-            
-            // In der onAuthStateChange Methode
-            async onAuthStateChange(user) {
-                if (user) {
-                    // ...
-                    if (isAdmin) {
-                        // ... bestehende Admin-Funktionen
-                        this.notificationManager.init(); // Hinzufügen, um den Admin zu registrieren
-                    } // ...
-                } // ...
-            }
+        
             init() {
                 this.authManager.init();
                 this.filmManager.init();
                 this.codeManager.init();
             }
-
+        
             async onAuthStateChange(user) {
                 if (user) {
                     const isAdmin = user.uid === ADMIN_UID;
@@ -416,7 +404,8 @@
                         this.uiManager.showView('admin');
                         this.codeManager.displayCodeRequests();
                         this.codeManager.displayAllUsers();
-                        this.filmManager.displayManageableFilms(); // <-- HIER HINZUGEFÜGT
+                        this.filmManager.displayManageableFilms();
+                        this.notificationManager.init(); // Wird für den Admin initialisiert
                     } else {
                         this.uiManager.showView('dashboard');
                     }
@@ -743,5 +732,6 @@
 </script>
 </body>
 </html>
+
 
 
